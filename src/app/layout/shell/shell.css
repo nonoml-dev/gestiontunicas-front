@@ -1,0 +1,125 @@
+.contenedor {
+  height: 100dvh;
+  background: #f2efe6;
+}
+
+.barra-lateral {
+  width: 256px;
+  background: #060830;
+  border-radius: 0;
+  border: none;
+}
+
+.marca {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 24px 16px;
+}
+
+.marca img {
+  height: 56px;
+  width: auto;
+}
+
+.marca .nombre {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px;
+  line-height: 26px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.opcion {
+  --mat-list-active-indicator-shape: 0;
+  --mat-list-active-indicator-color: rgb(136 156 87 / 16%);
+  --mat-list-list-item-label-text-color: rgb(255 255 255 / 70%);
+  --mat-list-list-item-leading-icon-color: rgb(255 255 255 / 70%);
+  --mat-list-list-item-hover-label-text-color: #ffffff;
+  --mat-list-list-item-hover-leading-icon-color: #ffffff;
+  --mat-list-list-item-hover-state-layer-color: #ffffff;
+  --mat-list-list-item-focus-label-text-color: #ffffff;
+  --mat-list-list-item-focus-state-layer-color: #ffffff;
+  border-left: 3px solid transparent;
+  border-radius: 0;
+}
+
+.opcion.activa {
+  border-left-color: #889c57;
+  background: rgb(136 156 87 / 16%);
+  --mat-list-list-item-label-text-color: #ffffff;
+  --mat-list-list-item-leading-icon-color: #ffffff;
+}
+
+.contenido {
+  display: flex;
+  flex-direction: column;
+}
+
+.barra-superior {
+  /* En una columna flex de alto fijo, si la página es más alta que la pantalla la barra se encogería. */
+  flex-shrink: 0;
+  background: #ffffff;
+  border-bottom: 1px solid rgb(6 8 48 / 12%);
+  gap: 8px;
+  padding: 0 32px;
+}
+
+.titulo {
+  margin: 0;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 28px;
+  font-weight: 600;
+  color: #060830;
+}
+
+.hueco {
+  flex: 1;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background: #060830;
+  color: #ffffff;
+  font: 500 14px Jost, Futura, sans-serif;
+  cursor: pointer;
+}
+
+.avatar:focus-visible {
+  outline: 2px solid #889c57;
+  outline-offset: 2px;
+}
+
+.datos-usuario {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 16px 12px;
+}
+
+.usuario-nombre {
+  font-size: 14px;
+  font-weight: 500;
+  color: #060830;
+}
+
+.usuario-cargo {
+  font-size: 12px;
+  color: rgb(6 8 48 / 60%);
+}
+
+.pagina {
+  padding: 32px;
+}
+
+@media (max-width: 1023.98px) {
+  .barra-superior {
+    padding: 0 16px;
+  }
+
+  .pagina {
+    padding: 16px;
+  }
+}

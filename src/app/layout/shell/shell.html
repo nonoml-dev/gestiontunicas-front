@@ -1,0 +1,67 @@
+<mat-sidenav-container class="contenedor">
+  <mat-sidenav
+    #barra
+    class="barra-lateral"
+    [mode]="esTablet() ? 'over' : 'side'"
+    [opened]="!esTablet()"
+  >
+    <div class="marca">
+      <img src="assets/escudo-blanco.png" alt="" height="56" />
+      <span class="nombre">Hermandad de la Quinta Angustia</span>
+    </div>
+
+    <mat-nav-list>
+      @for (opcion of opciones; track opcion.ruta) {
+        <a
+          mat-list-item
+          class="opcion"
+          [routerLink]="opcion.ruta"
+          routerLinkActive="activa"
+          #enlace="routerLinkActive"
+          [activated]="enlace.isActive"
+          (click)="esTablet() && barra.close()"
+        >
+          <mat-icon matListItemIcon>{{ opcion.icono }}</mat-icon>
+          <span matListItemTitle>{{ opcion.texto }}</span>
+        </a>
+      }
+    </mat-nav-list>
+  </mat-sidenav>
+
+  <mat-sidenav-content class="contenido">
+    <mat-toolbar class="barra-superior">
+      @if (esTablet()) {
+        <button mat-icon-button type="button" aria-label="Abrir el menú" (click)="barra.toggle()">
+          <mat-icon>menu</mat-icon>
+        </button>
+      }
+      <h1 class="titulo">{{ titulo() }}</h1>
+      <span class="hueco"></span>
+      <button
+        type="button"
+        class="avatar"
+        [matMenuTriggerFor]="menuUsuario"
+        [attr.aria-label]="'Menú de ' + (usuario()?.nombre ?? 'usuario')"
+      >
+        {{ iniciales() }}
+      </button>
+      <mat-menu #menuUsuario="matMenu" xPosition="before">
+        @if (usuario(); as u) {
+          <div class="datos-usuario">
+            <span class="usuario-nombre">{{ u.nombre }} {{ u.apellidos }}</span>
+            <span class="usuario-cargo">{{ u.cargoEtiqueta }}</span>
+          </div>
+          <mat-divider />
+        }
+        <button mat-menu-item type="button" (click)="cerrarSesion()">
+          <mat-icon>logout</mat-icon>
+          <span>Cerrar sesión</span>
+        </button>
+      </mat-menu>
+    </mat-toolbar>
+
+    <main class="pagina">
+      <router-outlet />
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>

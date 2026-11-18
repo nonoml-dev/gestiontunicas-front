@@ -1,0 +1,105 @@
+<div class="acciones">
+  @if (puedeGestionar) {
+    <a mat-button routerLink="/hermanos/nuevo">
+      <mat-icon>person_add</mat-icon>
+      Nuevo hermano
+    </a>
+    <a mat-flat-button routerLink="/hermanos/importar">
+      <mat-icon>upload_file</mat-icon>
+      Importar Excel
+    </a>
+  }
+</div>
+
+<mat-form-field appearance="outline" class="buscador" subscriptSizing="dynamic">
+  <mat-icon matPrefix>search</mat-icon>
+  <mat-label>Buscar hermano</mat-label>
+  <input
+    #buscador
+    matInput
+    type="search"
+    autocomplete="off"
+    autofocus
+    [value]="texto()"
+    (input)="texto.set(buscador.value)"
+  />
+  <mat-hint>Nombre y apellidos</mat-hint>
+</mat-form-field>
+
+<mat-chip-listbox class="filtros" aria-label="Filtros del listado">
+  <mat-chip-option [selected]="enEdad()" (selectionChange)="filtrarPorEdad($event.selected)">
+    En edad a Jueves Santo
+    @if (criterioEdad(); as c) {
+      ({{ c.juevesSanto | date: 'dd/MM/yyyy' }}): {{ c.edadMin }}–{{ c.edadMax }} años
+    }
+  </mat-chip-option>
+</mat-chip-listbox>
+
+<mat-card appearance="outlined" class="tarjeta">
+  @if (cargando()) {
+    <mat-progress-bar mode="indeterminate" class="progreso" />
+  }
+
+  <table
+    mat-table
+    [dataSource]="hermanos()"
+    matSort
+    matSortActive="nombreCompleto"
+    matSortDirection="asc"
+    matSortDisableClear
+    (matSortChange)="cambiarOrden($event)"
+  >
+    <ng-container matColumnDef="numeroHermano">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header class="numero">Nº de hermano</th>
+      <td mat-cell *matCellDef="let h" class="numero">{{ h.numeroHermano ?? '—' }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="nombreCompleto">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Apellidos, Nombre</th>
+      <td mat-cell *matCellDef="let h">{{ h.nombreCompleto }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="fechaNacimiento">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha de nacimiento</th>
+      <td mat-cell *matCellDef="let h" class="cifra">
+        @if (h.fechaNacimiento) {
+          {{ h.fechaNacimiento | date: 'dd/MM/yyyy' }}
+        } @else {
+          <span class="sin-dato">Sin fecha (ficha incompleta)</span>
+        }
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="columnas"></tr>
+    <tr
+      mat-row
+      *matRowDef="let fila; columns: columnas"
+      class="fila"
+      tabindex="0"
+      (click)="abrir(fila)"
+      (keydown.enter)="abrir(fila)"
+    ></tr>
+
+    <tr class="mat-row" *matNoDataRow>
+      <td class="mat-cell vacio" [attr.colspan]="columnas.length">
+        @if (error(); as mensaje) {
+          <span class="error">{{ mensaje }}</span>
+        } @else if (!cargando()) {
+          @if (texto().trim() || enEdad()) {
+            No hay ningún hermano que coincida con la búsqueda y los filtros.
+          } @else {
+            Todavía no hay hermanos.
+          }
+        }
+      </td>
+    </tr>
+  </table>
+
+  <mat-paginator
+    [length]="total()"
+    [pageIndex]="pagina()"
+    [pageSize]="tamano()"
+    [pageSizeOptions]="tamanos"
+    (page)="cambiarPagina($event)"
+  />
+</mat-card>

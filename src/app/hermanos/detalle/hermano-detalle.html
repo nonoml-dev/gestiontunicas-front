@@ -1,0 +1,107 @@
+<a mat-button routerLink="/hermanos" class="volver">
+  <mat-icon>arrow_back</mat-icon>
+  Volver al listado
+</a>
+
+<header class="cabecera">
+  @if (hermano(); as h) {
+    <h2 class="nombre">{{ h.nombreCompleto }}</h2>
+    @if (h.numeroHermano) {
+      <span class="numero">Hermano nº {{ h.numeroHermano }}</span>
+    }
+  } @else if (!id()) {
+    <h2 class="nombre">Nuevo hermano</h2>
+  }
+</header>
+
+<mat-card appearance="outlined" class="tarjeta">
+  @if (cargando() || guardando()) {
+    <mat-progress-bar mode="indeterminate" class="progreso" />
+  }
+
+  <mat-card-content>
+    <form [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+      <h3 class="seccion">Datos del hermano</h3>
+      @if (hermano()) {
+        <p class="nota">Vienen del Excel de Secretaría y no se pueden editar.</p>
+      }
+      <div class="rejilla">
+        <mat-form-field appearance="outline">
+          <mat-label>Nº de hermano</mat-label>
+          <input matInput formControlName="numeroHermano" maxlength="10" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Fecha de nacimiento</mat-label>
+          <input matInput type="date" formControlName="fechaNacimiento" [max]="hoy" />
+          @if (!hermano()) {
+            <mat-hint>Sin ella no puede alquilar túnica</mat-hint>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Apellidos</mat-label>
+          <input matInput formControlName="apellidos" maxlength="150" />
+          @if (form.controls.apellidos.hasError('required')) {
+            <mat-error>Los apellidos son obligatorios</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Nombre</mat-label>
+          <input matInput formControlName="nombre" maxlength="100" />
+          @if (form.controls.nombre.hasError('required')) {
+            <mat-error>El nombre es obligatorio</mat-error>
+          }
+        </mat-form-field>
+      </div>
+
+      <h3 class="seccion">Contacto</h3>
+      <div class="rejilla">
+        <mat-form-field appearance="outline">
+          <mat-label>Teléfono 1</mat-label>
+          <input matInput type="tel" formControlName="telefono1" maxlength="20" autocomplete="off" />
+          @if (form.controls.telefono1.hasError('pattern')) {
+            <mat-error>Solo números, espacios y los signos + ( ) -</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Teléfono 2</mat-label>
+          <input matInput type="tel" formControlName="telefono2" maxlength="20" autocomplete="off" />
+          @if (form.controls.telefono2.hasError('pattern')) {
+            <mat-error>Solo números, espacios y los signos + ( ) -</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="ancho">
+          <mat-label>Email</mat-label>
+          <input matInput type="email" formControlName="email" maxlength="150" autocomplete="off" />
+          @if (form.controls.email.hasError('email')) {
+            <mat-error>El email no es válido</mat-error>
+          }
+        </mat-form-field>
+      </div>
+
+      @if (error(); as mensaje) {
+        <p class="error" role="alert">{{ mensaje }}</p>
+      }
+
+      @if (puedeGestionar) {
+        <div class="botones">
+          @if (hermano()) {
+            <button mat-button type="button" class="baja" (click)="darDeBaja()" [disabled]="guardando()">
+              <mat-icon>person_remove</mat-icon>
+              Dar de baja
+            </button>
+          }
+          <span class="hueco"></span>
+          @if (!id()) {
+            <a mat-button routerLink="/hermanos">Cancelar</a>
+          }
+          <button mat-flat-button type="submit" [disabled]="guardando() || cargando()">Guardar</button>
+        </div>
+      }
+    </form>
+  </mat-card-content>
+</mat-card>

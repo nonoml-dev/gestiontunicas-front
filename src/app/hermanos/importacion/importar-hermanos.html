@@ -1,0 +1,199 @@
+<a mat-button routerLink="/hermanos" class="volver">
+  <mat-icon>arrow_back</mat-icon>
+  Volver al listado
+</a>
+
+<h2 class="titulo">Importar Excel de hermanos</h2>
+
+<mat-card appearance="outlined" class="tarjeta">
+  @if (ocupado()) {
+    <mat-progress-bar mode="indeterminate" class="progreso" />
+  }
+
+  <mat-stepper linear [disableRipple]="true">
+    <!-- Paso 1 -->
+    <mat-step label="Subir fichero" [completed]="!!importacion()" [editable]="false">
+      <label
+        class="zona"
+        [class.arrastrando]="arrastrando()"
+        (dragover)="arrastrarEncima($event)"
+        (dragleave)="arrastrando.set(false)"
+        (drop)="soltar($event)"
+      >
+        <mat-icon class="icono-zona">upload_file</mat-icon>
+        <span class="zona-texto">Arrastra aquí el Excel de Secretaría o <u>elige un fichero</u></span>
+        <span class="ayuda">
+          El listado de Secretaría tal cual: Nombre («APELLIDOS, NOMBRE») · Número · Fecha de N · Edad (no se usa).
+          Solo se lee la primera hoja.
+        </span>
+        <input type="file" accept=".xlsx,.xls" class="oculto" [disabled]="ocupado()" (change)="elegirFichero($event)" />
+      </label>
+      <button mat-button type="button" (click)="descargarPlantilla()">
+        <mat-icon>download</mat-icon>
+        Descargar plantilla
+      </button>
+    </mat-step>
+
+    <!-- Paso 2 -->
+    <mat-step label="Revisar" [completed]="!!importacion() && sinDecidir() === 0" [editable]="!terminada()">
+      @if (importacion(); as imp) {
+        <p class="fichero">{{ imp.nombreFichero }} · {{ imp.totalFilas }} filas</p>
+      }
+      <mat-tab-group animationDuration="0ms" mat-stretch-tabs="false">
+        <mat-tab [label]="'Correctas (' + correctas().length + ')'">
+          <table mat-table [dataSource]="correctas()">
+            <ng-container matColumnDef="fila">
+              <th mat-header-cell *matHeaderCellDef>Fila</th>
+              <td mat-cell *matCellDef="let f" class="cifra">{{ f.numFila }}</td>
+            </ng-container>
+            <ng-container matColumnDef="numero">
+              <th mat-header-cell *matHeaderCellDef>Nº de hermano</th>
+              <td mat-cell *matCellDef="let f" class="cifra">{{ f.datos.numeroHermano ?? '—' }}</td>
+            </ng-container>
+            <ng-container matColumnDef="apellidos">
+              <th mat-header-cell *matHeaderCellDef>Apellidos</th>
+              <td mat-cell *matCellDef="let f">{{ f.datos.apellidos }}</td>
+            </ng-container>
+            <ng-container matColumnDef="nombre">
+              <th mat-header-cell *matHeaderCellDef>Nombre</th>
+              <td mat-cell *matCellDef="let f">{{ f.datos.nombre }}</td>
+            </ng-container>
+            <ng-container matColumnDef="fecha">
+              <th mat-header-cell *matHeaderCellDef>Fecha de nacimiento</th>
+              <td mat-cell *matCellDef="let f" class="cifra">
+                @if (f.datos.fechaNacimiento) {
+                  {{ f.datos.fechaNacimiento | date: 'dd/MM/yyyy' }}
+                } @else {
+                  <span class="secundario">Sin fecha (ficha incompleta)</span>
+                }
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="accion">
+              <th mat-header-cell *matHeaderCellDef>Al importar</th>
+              <td mat-cell *matCellDef="let f">
+                {{ f.decision === 'ACTUALIZAR' ? 'Se actualiza el existente' : 'Hermano nuevo' }}
+              </td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="columnasCorrectas"></tr>
+            <tr mat-row *matRowDef="let fila; columns: columnasCorrectas"></tr>
+            <tr class="mat-row" *matNoDataRow>
+              <td class="mat-cell vacio" [attr.colspan]="columnasCorrectas.length">No hay filas correctas.</td>
+            </tr>
+          </table>
+        </mat-tab>
+
+        <mat-tab [label]="'Con errores (' + conErrores().length + ')'">
+          <p class="aviso">Estas filas no se importan. Corrígelas en el Excel y vuelve a subirlo si las necesitas.</p>
+          <table mat-table [dataSource]="conErrores()">
+            <ng-container matColumnDef="fila">
+              <th mat-header-cell *matHeaderCellDef>Fila</th>
+              <td mat-cell *matCellDef="let f" class="cifra">{{ f.numFila }}</td>
+            </ng-container>
+            <ng-container matColumnDef="contenido">
+              <th mat-header-cell *matHeaderCellDef>En el Excel</th>
+              <td mat-cell *matCellDef="let f">{{ nombreLeido(f) }}</td>
+            </ng-container>
+            <ng-container matColumnDef="motivo">
+              <th mat-header-cell *matHeaderCellDef>Motivo</th>
+              <td mat-cell *matCellDef="let f" class="motivo">{{ f.errores.join(' · ') }}</td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="columnasErrores"></tr>
+            <tr mat-row *matRowDef="let fila; columns: columnasErrores"></tr>
+            <tr class="mat-row" *matNoDataRow>
+              <td class="mat-cell vacio" [attr.colspan]="columnasErrores.length">Ninguna fila tiene errores.</td>
+            </tr>
+          </table>
+        </mat-tab>
+
+        <mat-tab [label]="'Posibles duplicados (' + duplicados().length + ')'">
+          @for (f of duplicados(); track f.id) {
+            <section class="duplicado">
+              <div class="comparacion">
+                <div>
+                  <h4>En el Excel (fila {{ f.numFila }})</h4>
+                  <p>{{ f.datos.apellidos }}, {{ f.datos.nombre }}</p>
+                  <p class="secundario">
+                    Nº {{ f.datos.numeroHermano ?? '—' }} ·
+                    {{ f.datos.fechaNacimiento ? (f.datos.fechaNacimiento | date: 'dd/MM/yyyy') : 'Sin fecha' }}
+                  </p>
+                </div>
+                <div>
+                  <h4>Ya existe</h4>
+                  @if (f.hermanoCoincidente; as h) {
+                    <p>{{ h.nombreCompleto }}</p>
+                    <p class="secundario">
+                      Nº {{ h.numeroHermano ?? '—' }} ·
+                      {{ h.fechaNacimiento ? (h.fechaNacimiento | date: 'dd/MM/yyyy') : 'Sin fecha' }}
+                    </p>
+                  }
+                </div>
+              </div>
+              <mat-button-toggle-group
+                [value]="f.decision"
+                (change)="decidir(f, $event.value)"
+                [attr.aria-label]="'Qué hacer con la fila ' + f.numFila"
+                hideSingleSelectionIndicator
+              >
+                <mat-button-toggle value="ACTUALIZAR">Actualizar existente</mat-button-toggle>
+                <mat-button-toggle value="CREAR">Crear nuevo</mat-button-toggle>
+                <mat-button-toggle value="IGNORAR">Ignorar</mat-button-toggle>
+              </mat-button-toggle-group>
+            </section>
+          } @empty {
+            <p class="vacio">No hay posibles duplicados.</p>
+          }
+        </mat-tab>
+      </mat-tab-group>
+
+      <div class="botones">
+        <button mat-button type="button" (click)="cancelar()" [disabled]="ocupado()">Cancelar importación</button>
+        <span class="hueco"></span>
+        @if (sinDecidir() > 0) {
+          <span class="secundario">
+            {{ sinDecidir() === 1 ? 'Falta 1 duplicado por decidir' : 'Faltan ' + sinDecidir() + ' duplicados por decidir' }}
+          </span>
+        }
+        <button mat-flat-button type="button" matStepperNext [disabled]="sinDecidir() > 0">Siguiente</button>
+      </div>
+    </mat-step>
+
+    <!-- Paso 3 -->
+    <mat-step label="Confirmar">
+      @if (terminada()) {
+        <div class="terminada">
+          <mat-icon class="icono-ok">check_circle</mat-icon>
+          <p>Importación terminada.</p>
+          <a mat-flat-button routerLink="/hermanos">Ir al listado de hermanos</a>
+        </div>
+      } @else {
+        <ul class="resumen">
+          <li>
+            <strong>{{ resumen().crear }}</strong>
+            {{ resumen().crear === 1 ? 'hermano nuevo' : 'hermanos nuevos' }}
+          </li>
+          <li>
+            <strong>{{ resumen().actualizar }}</strong>
+            {{ resumen().actualizar === 1 ? 'hermano que ya existía se actualiza' : 'hermanos que ya existían se actualizan' }}
+            (nº de hermano)
+          </li>
+          <li>
+            <strong>{{ resumen().ignorar }}</strong> {{ resumen().ignorar === 1 ? 'fila ignorada' : 'filas ignoradas' }}
+          </li>
+          <li>
+            <strong>{{ resumen().errores }}</strong>
+            {{ resumen().errores === 1 ? 'fila con errores que no se importa' : 'filas con errores que no se importan' }}
+          </li>
+        </ul>
+        <div class="botones">
+          <button mat-button type="button" matStepperPrevious>Atrás</button>
+          <span class="hueco"></span>
+          <button mat-flat-button type="button" (click)="importar()" [disabled]="ocupado()">Importar</button>
+        </div>
+      }
+    </mat-step>
+  </mat-stepper>
+
+  @if (error(); as mensaje) {
+    <p class="error" role="alert">{{ mensaje }}</p>
+  }
+</mat-card>

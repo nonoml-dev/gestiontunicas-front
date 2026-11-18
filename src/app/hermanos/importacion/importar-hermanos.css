@@ -1,0 +1,166 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.volver {
+  align-self: flex-start;
+}
+
+.titulo {
+  margin: 0;
+  font: 600 24px 'Cormorant Garamond', serif;
+  color: #060830;
+}
+
+.tarjeta {
+  position: relative;
+  overflow: hidden;
+  padding-bottom: 8px;
+}
+
+.progreso {
+  position: absolute;
+  inset: 0 0 auto;
+  --mat-progress-bar-active-indicator-color: #889c57;
+  --mat-progress-bar-track-height: 2px;
+  --mat-progress-bar-active-indicator-height: 2px;
+}
+
+mat-stepper {
+  background: transparent;
+}
+
+.zona {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 40px 16px;
+  margin-bottom: 16px;
+  border: 2px dashed rgb(6 8 48 / 12%);
+  border-radius: 8px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.zona:hover,
+.zona.arrastrando,
+.zona:focus-within {
+  border-color: #889c57;
+}
+
+.icono-zona {
+  width: 40px;
+  height: 40px;
+  font-size: 40px;
+  color: #889c57;
+}
+
+.zona-texto {
+  font-size: 16px;
+}
+
+.ayuda,
+.secundario,
+.fichero {
+  font-size: 14px;
+  color: rgb(6 8 48 / 60%);
+}
+
+.fichero {
+  margin: 0 0 8px;
+}
+
+.oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+table {
+  width: 100%;
+  background: transparent;
+  --mat-table-row-item-container-height: 40px;
+}
+
+.cifra {
+  font-variant-numeric: tabular-nums;
+}
+
+.motivo,
+.error {
+  color: var(--mat-sys-error);
+}
+
+.aviso {
+  margin: 16px 0 8px;
+  font-size: 14px;
+}
+
+.vacio {
+  padding: 24px 16px;
+  text-align: center;
+  color: rgb(6 8 48 / 60%);
+}
+
+.duplicado {
+  padding: 16px 0;
+  border-bottom: 1px solid rgb(6 8 48 / 12%);
+}
+
+.comparacion {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.comparacion h4 {
+  margin: 0 0 4px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.comparacion p {
+  margin: 0;
+}
+
+.botones {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.hueco {
+  flex: 1;
+}
+
+.resumen {
+  margin: 0;
+  padding-left: 20px;
+  line-height: 32px;
+}
+
+.terminada {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 24px;
+}
+
+.icono-ok {
+  width: 48px;
+  height: 48px;
+  font-size: 48px;
+  color: #889c57;
+}
+
+.error {
+  margin: 8px 24px 0;
+  font-size: 14px;
+}

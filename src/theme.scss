@@ -1,0 +1,57 @@
+// Tema de Angular Material (M3) con la paleta de DESIGN.md §3.
+@use '@angular/material' as mat;
+
+html {
+  color-scheme: light;
+
+  @include mat.theme(
+    (
+      color: mat.$azure-palette,
+      typography: (
+        plain-family: 'Jost, Futura, sans-serif',
+        brand-family: "'Cormorant Garamond', serif",
+      ),
+      density: 0,
+    ),
+    (
+      primary: #060830,
+      on-primary: #ffffff,
+      secondary: #889c57,
+      on-secondary: #060830,
+      background: #f2efe6,
+      on-background: #060830,
+      surface: #ffffff,
+      on-surface: #060830,
+      on-surface-variant: rgb(6 8 48 / 60%),
+      outline: rgb(6 8 48 / 38%),
+      outline-variant: rgb(6 8 48 / 12%),
+      surface-container-lowest: #ffffff,
+      surface-container-low: #ffffff,
+      surface-container: #ffffff,
+      surface-container-high: #ffffff,
+      surface-container-highest: #ffffff,
+    )
+  );
+
+  // El foco de los campos va en verde oliva (solo el borde: el texto pequeño nunca en oliva).
+  @include mat.form-field-overrides(
+    (
+      outlined-focus-outline-color: #889c57,
+      outlined-caret-color: #060830,
+      outlined-focus-label-text-color: #060830,
+    )
+  );
+
+}
+
+body {
+  margin: 0;
+  background: var(--mat-sys-background);
+  color: var(--mat-sys-on-background);
+  font-family: Jost, Futura, sans-serif;
+}
+
+// Material Symbols Outlined, peso 300 y sin relleno (DESIGN.md §2.4).
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+}

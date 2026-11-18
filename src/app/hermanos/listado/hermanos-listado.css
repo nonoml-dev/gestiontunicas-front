@@ -1,0 +1,87 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  min-height: 40px;
+}
+
+.buscador {
+  width: 100%;
+  --mat-form-field-outlined-container-shape: 4px;
+  background: transparent;
+}
+
+.filtros {
+  --mat-chip-elevated-selected-container-color: rgb(136 156 87 / 16%);
+  --mat-chip-selected-label-text-color: #060830;
+  --mat-chip-with-icon-selected-icon-color: #060830;
+  --mat-chip-outline-color: rgb(6 8 48 / 38%);
+}
+
+.tarjeta {
+  position: relative;
+  overflow: hidden;
+}
+
+.progreso {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  --mat-progress-bar-active-indicator-color: #889c57;
+  --mat-progress-bar-track-height: 2px;
+  --mat-progress-bar-active-indicator-height: 2px;
+}
+
+table {
+  width: 100%;
+  background: transparent;
+  --mat-table-row-item-container-height: 44px;
+  --mat-table-header-container-height: 48px;
+}
+
+th {
+  font-size: 14px;
+  font-weight: 500;
+  color: #060830;
+}
+
+.numero {
+  width: 160px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.cifra {
+  font-variant-numeric: tabular-nums;
+}
+
+.fila {
+  cursor: pointer;
+}
+
+.fila:hover,
+.fila:focus-visible {
+  background: rgb(6 8 48 / 8%);
+  outline: none;
+}
+
+.sin-dato {
+  color: rgb(6 8 48 / 60%);
+}
+
+.vacio {
+  padding: 32px 16px;
+  text-align: center;
+  color: rgb(6 8 48 / 60%);
+}
+
+.error {
+  color: var(--mat-sys-error);
+}

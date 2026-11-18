@@ -1,0 +1,57 @@
+<main class="login">
+  <header class="marca">
+    <img
+      class="escudo"
+      src="assets/escudo-blanco.png"
+      alt="Escudo de la Hermandad de la Quinta Angustia"
+      height="160"
+    />
+    <h1 class="nombre">Hermandad de la Quinta Angustia</h1>
+    <p class="subtitulo">Sistema de gestión de túnicas en propiedad de la Hermandad</p>
+  </header>
+
+  <mat-card appearance="outlined" class="tarjeta">
+    <mat-card-content>
+      <form [formGroup]="form" (ngSubmit)="entrar()" novalidate>
+        <mat-form-field appearance="outline">
+          <mat-label>Usuario</mat-label>
+          <input matInput formControlName="usuario" autocomplete="username" />
+          @if (form.controls.usuario.hasError('required')) {
+            <mat-error>Introduce tu usuario</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Contraseña</mat-label>
+          <input
+            matInput
+            formControlName="password"
+            [type]="mostrarPassword() ? 'text' : 'password'"
+            autocomplete="current-password"
+          />
+          <button
+            mat-icon-button
+            matSuffix
+            type="button"
+            (click)="alternarPassword()"
+            [attr.aria-label]="mostrarPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+            [attr.aria-pressed]="mostrarPassword()"
+          >
+            <mat-icon>{{ mostrarPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          @if (form.controls.password.hasError('required')) {
+            <mat-error>Introduce tu contraseña</mat-error>
+          }
+        </mat-form-field>
+
+        <button mat-flat-button type="submit" class="entrar" [disabled]="enviando()">
+          {{ enviando() ? 'Entrando…' : 'Entrar' }}
+        </button>
+
+        @if (error(); as mensaje) {
+          <p class="error" role="alert">{{ mensaje }}</p>
+        }
+      </form>
+    </mat-card-content>
+  </mat-card>
+</main>
