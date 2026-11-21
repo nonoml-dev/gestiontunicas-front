@@ -1,0 +1,35 @@
+<mat-card appearance="outlined" class="tabla-paginada">
+  @if (cargando()) {
+    <mat-progress-bar mode="indeterminate" class="progreso" />
+  }
+
+  <table mat-table [dataSource]="filas()">
+    <tr mat-header-row *matHeaderRowDef="columnas()"></tr>
+    <tr
+      mat-row
+      *matRowDef="let fila; columns: columnas()"
+      [class.fila-clicable]="clicable()"
+      [attr.tabindex]="clicable() ? 0 : null"
+      (click)="pulsar(fila)"
+      (keydown.enter)="pulsar(fila)"
+    ></tr>
+
+    <tr class="mat-row" *matNoDataRow>
+      <td class="mat-cell vacio" [attr.colspan]="columnas().length">
+        @if (error(); as mensaje) {
+          <span class="error">{{ mensaje }}</span>
+        } @else if (!cargando()) {
+          {{ mensajeVacio() }}
+        }
+      </td>
+    </tr>
+  </table>
+
+  <mat-paginator
+    [length]="total()"
+    [pageIndex]="pagina()"
+    [pageSize]="tamano()"
+    [pageSizeOptions]="tamanos()"
+    (page)="paginaCambiada.emit($event)"
+  />
+</mat-card>

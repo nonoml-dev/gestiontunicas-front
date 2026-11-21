@@ -35,71 +35,41 @@
   </mat-chip-option>
 </mat-chip-listbox>
 
-<mat-card appearance="outlined" class="tarjeta">
-  @if (cargando()) {
-    <mat-progress-bar mode="indeterminate" class="progreso" />
-  }
+<app-tabla-paginada
+  matSort
+  matSortActive="nombreCompleto"
+  matSortDirection="asc"
+  matSortDisableClear
+  (matSortChange)="cambiarOrden($event)"
+  [filas]="hermanos()"
+  [columnas]="columnas"
+  [total]="total()"
+  [pagina]="pagina()"
+  [tamano]="tamano()"
+  [cargando]="cargando()"
+  [error]="error()"
+  [mensajeVacio]="mensajeVacio()"
+  (filaPulsada)="abrir($event)"
+  (paginaCambiada)="cambiarPagina($event)"
+>
+  <ng-container matColumnDef="numeroHermano">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header class="numero">Nº de hermano</th>
+    <td mat-cell *matCellDef="let h" class="numero">{{ h.numeroHermano ?? '—' }}</td>
+  </ng-container>
 
-  <table
-    mat-table
-    [dataSource]="hermanos()"
-    matSort
-    matSortActive="nombreCompleto"
-    matSortDirection="asc"
-    matSortDisableClear
-    (matSortChange)="cambiarOrden($event)"
-  >
-    <ng-container matColumnDef="numeroHermano">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header class="numero">Nº de hermano</th>
-      <td mat-cell *matCellDef="let h" class="numero">{{ h.numeroHermano ?? '—' }}</td>
-    </ng-container>
+  <ng-container matColumnDef="nombreCompleto">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header>Apellidos, Nombre</th>
+    <td mat-cell *matCellDef="let h">{{ h.nombreCompleto }}</td>
+  </ng-container>
 
-    <ng-container matColumnDef="nombreCompleto">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header>Apellidos, Nombre</th>
-      <td mat-cell *matCellDef="let h">{{ h.nombreCompleto }}</td>
-    </ng-container>
-
-    <ng-container matColumnDef="fechaNacimiento">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha de nacimiento</th>
-      <td mat-cell *matCellDef="let h" class="cifra">
-        @if (h.fechaNacimiento) {
-          {{ h.fechaNacimiento | date: 'dd/MM/yyyy' }}
-        } @else {
-          <span class="sin-dato">Sin fecha (ficha incompleta)</span>
-        }
-      </td>
-    </ng-container>
-
-    <tr mat-header-row *matHeaderRowDef="columnas"></tr>
-    <tr
-      mat-row
-      *matRowDef="let fila; columns: columnas"
-      class="fila"
-      tabindex="0"
-      (click)="abrir(fila)"
-      (keydown.enter)="abrir(fila)"
-    ></tr>
-
-    <tr class="mat-row" *matNoDataRow>
-      <td class="mat-cell vacio" [attr.colspan]="columnas.length">
-        @if (error(); as mensaje) {
-          <span class="error">{{ mensaje }}</span>
-        } @else if (!cargando()) {
-          @if (texto().trim() || enEdad()) {
-            No hay ningún hermano que coincida con la búsqueda y los filtros.
-          } @else {
-            Todavía no hay hermanos.
-          }
-        }
-      </td>
-    </tr>
-  </table>
-
-  <mat-paginator
-    [length]="total()"
-    [pageIndex]="pagina()"
-    [pageSize]="tamano()"
-    [pageSizeOptions]="tamanos"
-    (page)="cambiarPagina($event)"
-  />
-</mat-card>
+  <ng-container matColumnDef="fechaNacimiento">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha de nacimiento</th>
+    <td mat-cell *matCellDef="let h" class="cifra">
+      @if (h.fechaNacimiento) {
+        {{ h.fechaNacimiento | date: 'dd/MM/yyyy' }}
+      } @else {
+        <span class="sin-dato">Sin fecha (ficha incompleta)</span>
+      }
+    </td>
+  </ng-container>
+</app-tabla-paginada>

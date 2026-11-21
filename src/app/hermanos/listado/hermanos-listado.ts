@@ -10,21 +10,19 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { MatPaginatorIntl, MatPaginatorModule, PageEvent } from '@angular/material/paginator';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { PageEvent } from '@angular/material/paginator';
 import { MatSortModule, Sort } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { Router, RouterLink } from '@angular/router';
-import { catchError, debounceTime, distinctUntilChanged, map, of, switchMap, tap } from 'rxjs';
+import { catchError, debounceTime, filter, map, of, switchMap, tap } from 'rxjs';
 
 import { AuthService } from '../../auth/auth.service';
 import { mensajeError } from '../../comun/mensaje-error';
-import { PaginadorEs } from '../../comun/paginador-es';
+import { TablaPaginada } from '../../comun/tabla-paginada/tabla-paginada';
 import { CriterioEdad, HermanoResumen, OrdenHermanos, ROLES_GESTION_HERMANOS } from '../hermano.models';
 import { HermanosService } from '../hermanos.service';
 
@@ -44,17 +42,14 @@ interface Consulta {
     DatePipe,
     RouterLink,
     MatButtonModule,
-    MatCardModule,
     MatChipsModule,
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
-    MatPaginatorModule,
-    MatProgressBarModule,
     MatSortModule,
     MatTableModule,
+    TablaPaginada,
   ],
-  providers: [{ provide: MatPaginatorIntl, useClass: PaginadorEs }],
   templateUrl: './hermanos-listado.html',
   styleUrl: './hermanos-listado.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -65,7 +60,6 @@ export class HermanosListado {
   private readonly router = inject(Router);
 
   protected readonly columnas = ['numeroHermano', 'nombreCompleto', 'fechaNacimiento'];
-  protected readonly tamanos = [10, 25, 50];
   protected readonly puedeGestionar = inject(AuthService).tieneAlgunRol(ROLES_GESTION_HERMANOS);
 
   private readonly buscador = viewChild.required<ElementRef<HTMLInputElement>>('buscador');
@@ -89,6 +83,11 @@ export class HermanosListado {
   protected readonly tamano = computed(() => this.consulta().tamano);
   protected readonly enEdad = computed(() => this.consulta().enEdad);
   protected readonly criterioEdad = signal<CriterioEdad | null>(null);
+  protected readonly mensajeVacio = computed(() =>
+    this.texto().trim() || this.enEdad()
+      ? 'No hay ningún hermano que coincida con la búsqueda y los filtros.'
+      : 'Todavía no hay hermanos.',
+  );
 
   constructor() {
     this.hermanosService
@@ -97,11 +96,12 @@ export class HermanosListado {
       .subscribe({ next: (criterio) => this.criterioEdad.set(criterio), error: () => undefined });
 
     // Al escribir: vuelve a la primera página cuando se deja de teclear 300 ms.
+    // Si el texto no ha cambiado (también al abrir la pantalla) no se repite la consulta ni se pierde la página.
     toObservable(this.texto)
       .pipe(
         map((texto) => texto.trim()),
         debounceTime(300),
-        distinctUntilChanged(),
+        filter((texto) => texto !== this.consulta().texto),
         takeUntilDestroyed(),
       )
       .subscribe((texto) => this.consulta.update((c) => ({ ...c, texto, pagina: 0 })));
