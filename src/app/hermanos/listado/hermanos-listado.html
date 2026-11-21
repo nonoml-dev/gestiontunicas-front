@@ -1,9 +1,11 @@
 <div class="acciones">
-  @if (puedeGestionar) {
+  @if (puedeCrear) {
     <a mat-button routerLink="/hermanos/nuevo">
       <mat-icon>person_add</mat-icon>
       Nuevo hermano
     </a>
+  }
+  @if (puedeImportar) {
     <a mat-flat-button routerLink="/hermanos/importar">
       <mat-icon>upload_file</mat-icon>
       Importar Excel

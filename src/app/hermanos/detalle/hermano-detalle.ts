@@ -14,7 +14,7 @@ import { AuthService } from '../../auth/auth.service';
 import { AvisosService } from '../../comun/avisos/avisos.service';
 import { ConfirmacionService } from '../../comun/confirmacion/confirmacion.service';
 import { mensajeError } from '../../comun/mensaje-error';
-import { ContactoHermanoRequest, Hermano, HermanoRequest, ROLES_GESTION_HERMANOS } from '../hermano.models';
+import { ContactoHermanoRequest, Hermano, HermanoRequest } from '../hermano.models';
 import { HermanosService } from '../hermanos.service';
 
 const PATRON_TELEFONO = /^[0-9+()\s-]*$/;
@@ -52,7 +52,7 @@ export class HermanoDetalle {
   /** Parámetro de la ruta /hermanos/:id (vacío en /hermanos/nuevo). */
   readonly id = input<string>();
 
-  protected readonly puedeGestionar = inject(AuthService).tieneAlgunRol(ROLES_GESTION_HERMANOS);
+  protected readonly puedeGestionar = inject(AuthService).puede('hermanos', 'G');
   protected readonly hoy = new Date().toISOString().slice(0, 10);
 
   protected readonly hermano = signal<Hermano | null>(null);

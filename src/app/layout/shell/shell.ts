@@ -12,11 +12,14 @@ import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } fro
 import { filter, map } from 'rxjs';
 
 import { AuthService } from '../../auth/auth.service';
+import { Funcionalidad } from '../../auth/permisos';
 
 interface OpcionMenu {
   icono: string;
   texto: string;
   ruta: string;
+  /** Sin ella, la ven todos los usuarios. */
+  funcionalidad?: Funcionalidad;
 }
 
 /** Estructura común de las pantallas (DESIGN.md §6): barra lateral azul y barra superior blanca. */
@@ -42,11 +45,15 @@ export class Shell {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
 
-  /** Las demás opciones (Hermanos, Túnicas...) se añaden según se creen sus pantallas. */
-  protected readonly opciones: OpcionMenu[] = [
+  /** Las demás opciones (Túnicas, Repartos...) se añaden, con su permiso, según se creen sus pantallas. */
+  private readonly todasLasOpciones: OpcionMenu[] = [
     { icono: 'home', texto: 'Inicio', ruta: '/inicio' },
-    { icono: 'groups', texto: 'Hermanos', ruta: '/hermanos' },
+    { icono: 'groups', texto: 'Hermanos', ruta: '/hermanos', funcionalidad: 'hermanos' },
   ];
+
+  protected readonly opciones = computed(() =>
+    this.todasLasOpciones.filter((o) => !o.funcionalidad || this.auth.puede(o.funcionalidad)),
+  );
 
   /** Tablet (< 1024 px): la barra lateral se abre por encima con el botón de menú. */
   protected readonly esTablet = toSignal(
@@ -65,7 +72,7 @@ export class Shell {
   );
 
   protected readonly usuario = this.auth.usuario;
-  protected readonly esAdministrador = computed(() => this.usuario()?.roles.includes('ADMIN') ?? false);
+  protected readonly veAdministracion = computed(() => this.auth.puede('usuarios', 'G'));
 
   protected readonly iniciales = computed(() => {
     const usuario = this.usuario();

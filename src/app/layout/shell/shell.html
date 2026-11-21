@@ -11,7 +11,7 @@
     </div>
 
     <mat-nav-list>
-      @for (opcion of opciones; track opcion.ruta) {
+      @for (opcion of opciones(); track opcion.ruta) {
         <a
           mat-list-item
           class="opcion"
@@ -25,7 +25,7 @@
           <span matListItemTitle>{{ opcion.texto }}</span>
         </a>
       }
-      @if (esAdministrador()) {
+      @if (veAdministracion()) {
         <mat-divider class="divisor-menu" />
         <div class="seccion-menu">Administración</div>
         <a

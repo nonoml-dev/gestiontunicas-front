@@ -2,6 +2,7 @@ import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 
 import { AuthService } from './auth.service';
+import { Funcionalidad, Nivel } from './permisos';
 
 /** Pantallas de la aplicación: sin sesión se va al login, recordando a dónde se quería ir. */
 export const authGuard: CanActivateFn = (_route, state) => {
@@ -23,8 +24,8 @@ export const passwordAlDiaGuard: CanActivateFn = (_route, state) => {
 export const invitadoGuard: CanActivateFn = () =>
   inject(AuthService).autenticado() ? inject(Router).createUrlTree(['/inicio']) : true;
 
-/** Solo para los roles indicados; si no, vuelve a la ruta indicada (el backend también lo comprueba). */
-export const rolGuard =
-  (roles: readonly string[], siNo: string): CanActivateFn =>
+/** Solo con ese permiso de la matriz; si no, vuelve a la ruta indicada (el backend también lo comprueba). */
+export const permisoGuard =
+  (funcionalidad: Funcionalidad, nivel: Nivel, siNo: string): CanActivateFn =>
   () =>
-    inject(AuthService).tieneAlgunRol(roles) ? true : inject(Router).createUrlTree([siNo]);
+    inject(AuthService).puede(funcionalidad, nivel) ? true : inject(Router).createUrlTree([siNo]);

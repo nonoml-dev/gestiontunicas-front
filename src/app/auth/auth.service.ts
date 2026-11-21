@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { Observable, finalize, shareReplay, tap, throwError } from 'rxjs';
 
 import { Sesion, Usuario } from './auth.models';
+import { Funcionalidad, Nivel, tienePermiso } from './permisos';
 
 const CLAVE_SESION = 'gestiontunicas.sesion';
 export const URL_AUTH = '/api/v1/auth';
@@ -23,9 +24,9 @@ export class AuthService {
 
   readonly usuario = computed(() => this.sesion()?.usuario ?? null);
 
-  /** Si el usuario tiene alguno de los roles (ADMIN, PRIOSTE...). Solo sirve para mostrar u ocultar; el backend lo vuelve a comprobar. */
-  tieneAlgunRol(roles: readonly string[]): boolean {
-    return this.usuario()?.roles.some((rol) => roles.includes(rol)) ?? false;
+  /** Si el usuario llega a ese nivel según la matriz. Solo sirve para mostrar u ocultar; el backend lo vuelve a comprobar. */
+  puede(funcionalidad: Funcionalidad, nivel: Nivel = 'C'): boolean {
+    return tienePermiso(this.usuario()?.roles ?? [], funcionalidad, nivel);
   }
 
   /** Hay sesión mientras el refresh token no haya caducado (el token de acceso se renueva solo). */
