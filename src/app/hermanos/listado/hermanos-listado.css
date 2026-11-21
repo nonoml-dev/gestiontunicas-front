@@ -24,34 +24,6 @@
   --mat-chip-outline-color: rgb(6 8 48 / 38%);
 }
 
-.tarjeta {
-  position: relative;
-  overflow: hidden;
-}
-
-.progreso {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  --mat-progress-bar-active-indicator-color: #889c57;
-  --mat-progress-bar-track-height: 2px;
-  --mat-progress-bar-active-indicator-height: 2px;
-}
-
-table {
-  width: 100%;
-  background: transparent;
-  --mat-table-row-item-container-height: 44px;
-  --mat-table-header-container-height: 48px;
-}
-
-th {
-  font-size: 14px;
-  font-weight: 500;
-  color: #060830;
-}
-
 .numero {
   width: 160px;
   white-space: nowrap;
@@ -62,26 +34,6 @@ th {
   font-variant-numeric: tabular-nums;
 }
 
-.fila {
-  cursor: pointer;
-}
-
-.fila:hover,
-.fila:focus-visible {
-  background: rgb(6 8 48 / 8%);
-  outline: none;
-}
-
 .sin-dato {
   color: rgb(6 8 48 / 60%);
-}
-
-.vacio {
-  padding: 32px 16px;
-  text-align: center;
-  color: rgb(6 8 48 / 60%);
-}
-
-.error {
-  color: var(--mat-sys-error);
 }

@@ -1,3 +1,10 @@
 /* You can add global styles to this file, and also import other style files */
 
 @import 'tailwindcss';
+
+/* Avisos de operación correcta (DESIGN.md §9) */
+.aviso-exito {
+  --mat-snack-bar-container-color: #060830;
+  --mat-snack-bar-supporting-text-color: #ffffff;
+  --mat-snack-bar-button-color: #889c57;
+}

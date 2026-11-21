@@ -1,0 +1,51 @@
+app-tabla-paginada {
+  display: block;
+}
+
+.tabla-paginada {
+  position: relative;
+  overflow: hidden;
+}
+
+.tabla-paginada .progreso {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  --mat-progress-bar-active-indicator-color: #889c57;
+  --mat-progress-bar-track-height: 2px;
+  --mat-progress-bar-active-indicator-height: 2px;
+}
+
+.tabla-paginada table {
+  width: 100%;
+  background: transparent;
+  --mat-table-row-item-container-height: 44px;
+  --mat-table-header-container-height: 48px;
+}
+
+.tabla-paginada th {
+  font-size: 14px;
+  font-weight: 500;
+  color: #060830;
+}
+
+.tabla-paginada .fila-clicable {
+  cursor: pointer;
+}
+
+.tabla-paginada .fila-clicable:hover,
+.tabla-paginada .fila-clicable:focus-visible {
+  background: rgb(6 8 48 / 8%);
+  outline: none;
+}
+
+.tabla-paginada .vacio {
+  padding: 32px 16px;
+  text-align: center;
+  color: rgb(6 8 48 / 60%);
+}
+
+.tabla-paginada .error {
+  color: var(--mat-sys-error);
+}
