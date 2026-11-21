@@ -1,0 +1,60 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.acciones-pagina {
+  display: flex;
+  justify-content: flex-end;
+  min-height: 40px;
+}
+
+.buscador {
+  width: 100%;
+  --mat-form-field-outlined-container-shape: 4px;
+}
+
+.error-accion {
+  margin: 0;
+  color: var(--mat-sys-error);
+}
+
+.nombre {
+  font-weight: 500;
+}
+
+.tu-cuenta {
+  margin-left: 4px;
+  color: rgb(6 8 48 / 70%);
+}
+
+.username {
+  display: block;
+  font-size: 12px;
+  color: rgb(6 8 48 / 70%);
+}
+
+.estados {
+  --mat-chip-elevated-container-color: rgb(136 156 87 / 16%);
+  --mat-chip-label-text-color: #060830;
+  --mat-chip-outline-color: rgb(6 8 48 / 38%);
+}
+
+.estados .inactivo {
+  --mat-chip-elevated-container-color: transparent;
+}
+
+.celda-acciones {
+  width: 56px;
+  text-align: right;
+}
+
+.oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

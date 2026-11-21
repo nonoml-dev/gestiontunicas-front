@@ -65,6 +65,7 @@ export class Shell {
   );
 
   protected readonly usuario = this.auth.usuario;
+  protected readonly esAdministrador = computed(() => this.usuario()?.roles.includes('ADMIN') ?? false);
 
   protected readonly iniciales = computed(() => {
     const usuario = this.usuario();

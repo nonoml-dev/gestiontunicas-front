@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 
 import { authGuard, invitadoGuard, passwordAlDiaGuard, rolGuard } from './auth/auth.guards';
 import { ROLES_GESTION_HERMANOS } from './hermanos/hermano.models';
+import { ROLES_ADMINISTRACION } from './usuarios/usuario.models';
 
 export const routes: Routes = [
   {
@@ -53,6 +54,13 @@ export const routes: Routes = [
         title: 'Hermano · Hermandad de la Quinta Angustia',
         data: { titulo: 'Hermanos' },
         loadComponent: () => import('./hermanos/detalle/hermano-detalle').then((m) => m.HermanoDetalle),
+      },
+      {
+        path: 'administracion/usuarios',
+        title: 'Usuarios · Hermandad de la Quinta Angustia',
+        data: { titulo: 'Usuarios' },
+        canActivate: [rolGuard(ROLES_ADMINISTRACION, '/inicio')],
+        loadComponent: () => import('./usuarios/listado/usuarios-listado').then((m) => m.UsuariosListado),
       },
     ],
   },
