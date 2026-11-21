@@ -3,7 +3,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, finalize, shareReplay, tap, throwError } from 'rxjs';
 
-import { Sesion } from './auth.models';
+import { Sesion, Usuario } from './auth.models';
 
 const CLAVE_SESION = 'gestiontunicas.sesion';
 export const URL_AUTH = '/api/v1/auth';
@@ -53,6 +53,14 @@ export class AuthService {
     return this.http
       .post<Sesion>(`${URL_AUTH}/cambiar-password`, { passwordActual, passwordNueva })
       .pipe(tap((sesion) => this.guardarSesion(sesion)));
+  }
+
+  /** Refleja en la sesión los datos propios editados (nombre, cargo...) sin volver a entrar. */
+  actualizarUsuario(usuario: Usuario): void {
+    const sesion = this.sesion();
+    if (sesion) {
+      this.guardarSesion({ ...sesion, usuario });
+    }
   }
 
   /** Pide un token de acceso nuevo con el refresh token. Si falla, la sesión se borra. */

@@ -25,6 +25,22 @@
           <span matListItemTitle>{{ opcion.texto }}</span>
         </a>
       }
+      @if (esAdministrador()) {
+        <mat-divider class="divisor-menu" />
+        <div class="seccion-menu">Administración</div>
+        <a
+          mat-list-item
+          class="opcion"
+          routerLink="/administracion/usuarios"
+          routerLinkActive="activa"
+          #enlaceUsuarios="routerLinkActive"
+          [activated]="enlaceUsuarios.isActive"
+          (click)="esTablet() && barra.close()"
+        >
+          <mat-icon matListItemIcon>admin_panel_settings</mat-icon>
+          <span matListItemTitle>Usuarios</span>
+        </a>
+      }
     </mat-nav-list>
   </mat-sidenav>
 

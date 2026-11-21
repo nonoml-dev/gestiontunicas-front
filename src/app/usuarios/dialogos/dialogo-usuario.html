@@ -1,0 +1,82 @@
+<h2 mat-dialog-title class="titulo">{{ editando ? 'Editar usuario' : 'Nuevo usuario' }}</h2>
+
+<form [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+  <mat-dialog-content class="campos">
+    <div class="fila">
+      <mat-form-field appearance="outline">
+        <mat-label>Nombre</mat-label>
+        <input matInput formControlName="nombre" maxlength="100" autocomplete="off" required />
+        @if (form.controls.nombre.invalid) {
+          <mat-error>Indica el nombre</mat-error>
+        }
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Apellidos</mat-label>
+        <input matInput formControlName="apellidos" maxlength="150" autocomplete="off" />
+      </mat-form-field>
+    </div>
+
+    <div class="fila">
+      <mat-form-field appearance="outline">
+        <mat-label>Usuario</mat-label>
+        <input matInput formControlName="username" maxlength="50" autocomplete="off" required />
+        @if (form.controls.username.invalid) {
+          <mat-error>Solo letras sin acentos, números, punto, guion y guion bajo</mat-error>
+        }
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Cargo</mat-label>
+        <mat-select formControlName="cargo" required>
+          @for (cargo of cargos; track cargo.codigo) {
+            <mat-option [value]="cargo.codigo">{{ cargo.etiqueta }}</mat-option>
+          }
+        </mat-select>
+        @if (form.controls.cargo.invalid) {
+          <mat-error>Elige el cargo</mat-error>
+        }
+      </mat-form-field>
+    </div>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Email (opcional)</mat-label>
+      <input matInput type="email" formControlName="email" maxlength="150" autocomplete="off" />
+      @if (form.controls.email.invalid) {
+        <mat-error>El email no es válido</mat-error>
+      }
+    </mat-form-field>
+
+    <div class="grupo">
+      <span class="etiqueta" id="etiqueta-roles">Roles</span>
+      <mat-chip-listbox formControlName="roles" multiple aria-labelledby="etiqueta-roles" class="roles">
+        @for (rol of roles; track rol.codigo) {
+          <mat-chip-option [value]="rol.codigo" [disabled]="rolBloqueado(rol.codigo)">{{ rol.etiqueta }}</mat-chip-option>
+        }
+      </mat-chip-listbox>
+      @if (form.controls.roles.invalid && form.controls.roles.touched) {
+        <span class="error" role="alert">Elige al menos un rol</span>
+      }
+    </div>
+
+    <mat-slide-toggle formControlName="activo">Activo</mat-slide-toggle>
+
+    @if (esPropio) {
+      <p class="nota">
+        Es tu cuenta: no puedes desactivarla ni quitarte el rol de administrador. Si cambias tu usuario o tus roles,
+        tendrás que volver a iniciar sesión.
+      </p>
+    }
+    @if (!editando) {
+      <p class="nota">Al crearlo se generará una contraseña temporal.</p>
+    }
+    @if (error(); as mensaje) {
+      <p class="error" role="alert">{{ mensaje }}</p>
+    }
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" class="cancelar" [mat-dialog-close]="undefined">Cancelar</button>
+    <button mat-flat-button type="submit" class="guardar" [disabled]="enviando()">
+      {{ editando ? 'Guardar' : 'Crear usuario' }}
+    </button>
+  </mat-dialog-actions>
+</form>
