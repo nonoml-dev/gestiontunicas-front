@@ -75,6 +75,10 @@ export class Shell {
     return primera(usuario.nombre) + primera(usuario.apellidos);
   });
 
+  protected cambiarPassword(): void {
+    this.router.navigate(['/cambiar-password'], { queryParams: { volver: this.router.url } });
+  }
+
   protected cerrarSesion(): void {
     this.auth.cerrarSesion();
   }
