@@ -1,6 +1,5 @@
-import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Injectable, PLATFORM_ID, computed, inject, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, finalize, shareReplay, tap, throwError } from 'rxjs';
 
@@ -17,7 +16,6 @@ export const URL_AUTH = '/api/v1/auth';
 export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
-  private readonly esNavegador = isPlatformBrowser(inject(PLATFORM_ID));
 
   private readonly sesion = signal<Sesion | null>(this.leerSesion());
   /** Renovación en curso: si varias peticiones reciben 401 a la vez, todas esperan a la misma. */
@@ -81,22 +79,15 @@ export class AuthService {
   /** Borra la sesión local sin llamar al servidor (sesión caducada o rechazada). */
   borrarSesion(): void {
     this.sesion.set(null);
-    if (this.esNavegador) {
-      sessionStorage.removeItem(CLAVE_SESION);
-    }
+    sessionStorage.removeItem(CLAVE_SESION);
   }
 
   private guardarSesion(sesion: Sesion): void {
     this.sesion.set(sesion);
-    if (this.esNavegador) {
-      sessionStorage.setItem(CLAVE_SESION, JSON.stringify(sesion));
-    }
+    sessionStorage.setItem(CLAVE_SESION, JSON.stringify(sesion));
   }
 
   private leerSesion(): Sesion | null {
-    if (!this.esNavegador) {
-      return null;
-    }
     const guardada = sessionStorage.getItem(CLAVE_SESION);
     if (!guardada) {
       return null;

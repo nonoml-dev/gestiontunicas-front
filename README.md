@@ -24,9 +24,13 @@ La aplicación queda en `http://localhost:4200`. Con el backend en perfil `dev`,
 | Comando | Uso |
 |---|---|
 | `npm start` | Servidor de desarrollo con recarga automática |
-| `npm run build` | Compilación de producción en `dist/` |
+| `npm run build` | Compilación de producción: ficheros estáticos en `dist/gestiontunicas-front/browser` |
 | `npx ng test --watch=false` | Ejecuta los tests una vez |
 | `npm test` | Ejecuta los tests y sigue vigilando los cambios |
+
+## Despliegue
+
+La aplicación no necesita un servidor Node: Nginx sirve los ficheros estáticos. Debe devolver `index.html` en las rutas que no sean un fichero, para que funcionen los enlaces directos y la recarga de página, y redirigir `/api` al backend.
 
 ## Trabajo con Git
 
