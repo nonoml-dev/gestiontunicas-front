@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 
-import { authGuard, invitadoGuard, rolGuard } from './auth/auth.guards';
+import { authGuard, invitadoGuard, passwordAlDiaGuard, rolGuard } from './auth/auth.guards';
 import { ROLES_GESTION_HERMANOS } from './hermanos/hermano.models';
 
 export const routes: Routes = [
@@ -11,8 +11,14 @@ export const routes: Routes = [
     loadComponent: () => import('./auth/login/login').then((m) => m.Login),
   },
   {
-    path: '',
+    path: 'cambiar-password',
+    title: 'Cambiar contraseña · Hermandad de la Quinta Angustia',
     canActivate: [authGuard],
+    loadComponent: () => import('./auth/cambiar-password/cambiar-password').then((m) => m.CambiarPassword),
+  },
+  {
+    path: '',
+    canActivate: [authGuard, passwordAlDiaGuard],
     loadComponent: () => import('./layout/shell/shell').then((m) => m.Shell),
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'inicio' },

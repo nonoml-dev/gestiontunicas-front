@@ -48,6 +48,13 @@ export class AuthService {
       .pipe(tap((sesion) => this.guardarSesion(sesion)));
   }
 
+  /** Cambia la contraseña. El backend cierra las sesiones anteriores y devuelve una nueva. */
+  cambiarPassword(passwordActual: string, passwordNueva: string): Observable<Sesion> {
+    return this.http
+      .post<Sesion>(`${URL_AUTH}/cambiar-password`, { passwordActual, passwordNueva })
+      .pipe(tap((sesion) => this.guardarSesion(sesion)));
+  }
+
   /** Pide un token de acceso nuevo con el refresh token. Si falla, la sesión se borra. */
   refrescar(): Observable<Sesion> {
     const refreshToken = this.sesion()?.refreshToken;

@@ -11,6 +11,14 @@ export const authGuard: CanActivateFn = (_route, state) => {
   return inject(Router).createUrlTree(['/login'], { queryParams: { volver: state.url } });
 };
 
+/** Con la contraseña pendiente de cambiar solo se puede ir a cambiarla (el backend también lo exige). */
+export const passwordAlDiaGuard: CanActivateFn = (_route, state) => {
+  if (!inject(AuthService).usuario()?.debeCambiarPassword) {
+    return true;
+  }
+  return inject(Router).createUrlTree(['/cambiar-password'], { queryParams: { volver: state.url } });
+};
+
 /** Pantalla de login: si ya hay sesión se va directamente al Inicio. */
 export const invitadoGuard: CanActivateFn = () =>
   inject(AuthService).autenticado() ? inject(Router).createUrlTree(['/inicio']) : true;

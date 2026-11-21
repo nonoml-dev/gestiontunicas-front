@@ -10,6 +10,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { finalize } from 'rxjs';
 
 import { AuthService } from '../auth.service';
+import { destinoSeguro } from '../destino';
 
 @Component({
   selector: 'app-login',
@@ -71,8 +72,7 @@ export class Login {
 
   /** Vuelve a la pantalla que se intentaba abrir (solo rutas internas) o al Inicio. */
   private destino(): string {
-    const volver = this.route.snapshot.queryParamMap.get('volver');
-    return volver?.startsWith('/') && !volver.startsWith('//') && !volver.startsWith('/login') ? volver : '/inicio';
+    return destinoSeguro(this.route.snapshot.queryParamMap.get('volver'));
   }
 
   private mensajeError(err: HttpErrorResponse): string {
