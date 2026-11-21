@@ -1,59 +1,35 @@
-# GestiontunicasFront
+# Gestión de túnicas · Frontend
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.30.
+Aplicación web para gestionar el reparto anual de túnicas de la Hermandad de la Quinta Angustia. Está hecha con Angular 21 y Angular Material.
 
-## Development server
+## Requisitos
 
-To start a local development server, run:
+- Node `^20.19`, `^22.12` o `24` y superiores.
+- npm 11.
+- El [backend](https://github.com/nonoml-dev/gestiontunicas-back) arrancado en `http://localhost:8080`.
 
-```bash
-ng serve
+No necesita variables de entorno. En desarrollo, las llamadas a `/api` se redirigen al backend con `proxy.conf.json`.
+
+## Arranque desde cero
+
+```powershell
+npm ci
+npm start
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+La aplicación queda en `http://localhost:4200`. Con el backend en perfil `dev`, se entra con el usuario `admin` y la contraseña `1234`.
 
-## Code scaffolding
+## Comandos
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+| Comando | Uso |
+|---|---|
+| `npm start` | Servidor de desarrollo con recarga automática |
+| `npm run build` | Compilación de producción en `dist/` |
+| `npx ng test --watch=false` | Ejecuta los tests una vez |
+| `npm test` | Ejecuta los tests y sigue vigilando los cambios |
 
-```bash
-ng generate component component-name
-```
+## Trabajo con Git
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- Flujo de ramas: **tarea → rama del hito → `develop`**, siempre por PR. `main` no se toca hasta la v1.0.
+- Para cambiar solo mayúsculas o minúsculas de un fichero, usa `git mv -f viejo.ts Nuevo.ts`. Windows no distingue el cambio y, sin esto, el proyecto puede fallar en un clon nuevo.
+- No subas nunca secretos ni ficheros con datos de hermanos.
