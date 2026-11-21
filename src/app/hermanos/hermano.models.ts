@@ -59,6 +59,3 @@ export interface Pagina<T> {
   content: T[];
   page: { size: number; number: number; totalElements: number; totalPages: number };
 }
-
-/** Roles que pueden dar de alta, editar y dar de baja hermanos (el Capiller solo consulta). */
-export const ROLES_GESTION_HERMANOS = ['ADMIN', 'PRIOSTE', 'MAYORDOMO', 'SECRETARIO'];

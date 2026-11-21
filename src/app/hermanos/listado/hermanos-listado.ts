@@ -23,7 +23,7 @@ import { catchError, debounceTime, filter, map, of, switchMap, tap } from 'rxjs'
 import { AuthService } from '../../auth/auth.service';
 import { mensajeError } from '../../comun/mensaje-error';
 import { TablaPaginada } from '../../comun/tabla-paginada/tabla-paginada';
-import { CriterioEdad, HermanoResumen, OrdenHermanos, ROLES_GESTION_HERMANOS } from '../hermano.models';
+import { CriterioEdad, HermanoResumen, OrdenHermanos } from '../hermano.models';
 import { HermanosService } from '../hermanos.service';
 
 interface Consulta {
@@ -60,7 +60,9 @@ export class HermanosListado {
   private readonly router = inject(Router);
 
   protected readonly columnas = ['numeroHermano', 'nombreCompleto', 'fechaNacimiento'];
-  protected readonly puedeGestionar = inject(AuthService).tieneAlgunRol(ROLES_GESTION_HERMANOS);
+  private readonly auth = inject(AuthService);
+  protected readonly puedeCrear = this.auth.puede('hermanos', 'G');
+  protected readonly puedeImportar = this.auth.puede('importarHermanos', 'G');
 
   private readonly buscador = viewChild.required<ElementRef<HTMLInputElement>>('buscador');
 

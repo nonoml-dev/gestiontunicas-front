@@ -1,7 +1,5 @@
 import { Usuario } from '../auth/auth.models';
 
-export const ROLES_ADMINISTRACION = ['ADMIN'];
-
 /** Lista cerrada de cargos (CargoUsuarioEnum). */
 export const CARGOS = [
   { codigo: 'PRIOSTE_PRIMERO', etiqueta: 'Prioste primero' },

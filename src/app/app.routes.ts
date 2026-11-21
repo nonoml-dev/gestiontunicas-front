@@ -1,8 +1,6 @@
 import { Routes } from '@angular/router';
 
-import { authGuard, invitadoGuard, passwordAlDiaGuard, rolGuard } from './auth/auth.guards';
-import { ROLES_GESTION_HERMANOS } from './hermanos/hermano.models';
-import { ROLES_ADMINISTRACION } from './usuarios/usuario.models';
+import { authGuard, invitadoGuard, passwordAlDiaGuard, permisoGuard } from './auth/auth.guards';
 
 export const routes: Routes = [
   {
@@ -39,12 +37,12 @@ export const routes: Routes = [
         path: 'hermanos/importar',
         title: 'Importar Excel · Hermandad de la Quinta Angustia',
         data: { titulo: 'Hermanos' },
-        canActivate: [rolGuard(ROLES_GESTION_HERMANOS, '/hermanos')],
+        canActivate: [permisoGuard('importarHermanos', 'G', '/hermanos')],
         loadComponent: () => import('./hermanos/importacion/importar-hermanos').then((m) => m.ImportarHermanos),
       },
       {
         path: 'hermanos/nuevo',
-        canActivate: [rolGuard(ROLES_GESTION_HERMANOS, '/hermanos')],
+        canActivate: [permisoGuard('hermanos', 'G', '/hermanos')],
         title: 'Nuevo hermano · Hermandad de la Quinta Angustia',
         data: { titulo: 'Hermanos' },
         loadComponent: () => import('./hermanos/detalle/hermano-detalle').then((m) => m.HermanoDetalle),
@@ -59,7 +57,7 @@ export const routes: Routes = [
         path: 'administracion/usuarios',
         title: 'Usuarios · Hermandad de la Quinta Angustia',
         data: { titulo: 'Usuarios' },
-        canActivate: [rolGuard(ROLES_ADMINISTRACION, '/inicio')],
+        canActivate: [permisoGuard('usuarios', 'G', '/inicio')],
         loadComponent: () => import('./usuarios/listado/usuarios-listado').then((m) => m.UsuariosListado),
       },
     ],
