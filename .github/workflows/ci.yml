@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - develop
+      - main
+      - 'H*'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  build-y-tests:
+    name: build-y-tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    steps:
+      - name: Descargar el codigo
+        uses: actions/checkout@v7
+
+      # Version fija: incluye npm 11.6.2, el del proyecto (packageManager en package.json).
+      # Con un npm mas nuevo, "npm ci" rechaza el package-lock.json actual.
+      - name: Instalar Node 24.12.0
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24.12.0'
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Compilar
+        run: npm run build
+
+      - name: Ejecutar los tests
+        run: npx ng test --watch=false
