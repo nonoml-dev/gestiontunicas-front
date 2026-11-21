@@ -1,0 +1,56 @@
+.titulo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.campos {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fila {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding-top: 4px;
+}
+
+.grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.etiqueta {
+  font-size: 13px;
+  color: rgb(6 8 48 / 70%);
+}
+
+.roles {
+  --mat-chip-elevated-selected-container-color: rgb(136 156 87 / 16%);
+  --mat-chip-selected-label-text-color: #060830;
+  --mat-chip-with-icon-selected-icon-color: #060830;
+  --mat-chip-outline-color: rgb(6 8 48 / 38%);
+}
+
+.nota {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: rgb(6 8 48 / 70%);
+}
+
+.error {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--mat-sys-error);
+}
+
+@media (max-width: 599.98px) {
+  .fila {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}

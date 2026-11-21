@@ -3,20 +3,19 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
-import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router, RouterLink } from '@angular/router';
-import { Observable, filter, finalize, switchMap } from 'rxjs';
+import { Observable, finalize, switchMap } from 'rxjs';
 
 import { AuthService } from '../../auth/auth.service';
+import { AvisosService } from '../../comun/avisos/avisos.service';
+import { ConfirmacionService } from '../../comun/confirmacion/confirmacion.service';
 import { mensajeError } from '../../comun/mensaje-error';
-import { ContactoHermanoRequest, Hermano, HermanoRequest, ROLES_GESTION_HERMANOS } from '../hermano.models';
+import { ContactoHermanoRequest, Hermano, HermanoRequest } from '../hermano.models';
 import { HermanosService } from '../hermanos.service';
-import { ConfirmarBaja } from './confirmar-baja';
 
 const PATRON_TELEFONO = /^[0-9+()\s-]*$/;
 
@@ -47,13 +46,13 @@ export class HermanoDetalle {
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly hermanosService = inject(HermanosService);
   private readonly router = inject(Router);
-  private readonly dialog = inject(MatDialog);
-  private readonly snackBar = inject(MatSnackBar);
+  private readonly confirmacion = inject(ConfirmacionService);
+  private readonly avisos = inject(AvisosService);
 
   /** Parámetro de la ruta /hermanos/:id (vacío en /hermanos/nuevo). */
   readonly id = input<string>();
 
-  protected readonly puedeGestionar = inject(AuthService).tieneAlgunRol(ROLES_GESTION_HERMANOS);
+  protected readonly puedeGestionar = inject(AuthService).puede('hermanos', 'G');
   protected readonly hoy = new Date().toISOString().slice(0, 10);
 
   protected readonly hermano = signal<Hermano | null>(null);
@@ -107,7 +106,7 @@ export class HermanoDetalle {
     this.guardando.set(true);
     peticion.pipe(finalize(() => this.guardando.set(false))).subscribe({
       next: (hermano) => {
-        this.snackBar.open('Hermano guardado', undefined, { duration: 3000 });
+        this.avisos.exito('Hermano guardado');
         if (id === null) {
           this.router.navigate(['/hermanos', hermano.id], { replaceUrl: true });
         } else {
@@ -123,16 +122,18 @@ export class HermanoDetalle {
     if (!hermano) {
       return;
     }
-    this.dialog
-      .open(ConfirmarBaja, { data: hermano.nombreCompleto, width: '480px', autoFocus: 'dialog' })
-      .afterClosed()
-      .pipe(
-        filter((confirmado) => confirmado === true),
-        switchMap(() => this.hermanosService.darDeBaja(hermano.id)),
-      )
+    this.confirmacion
+      .confirmar({
+        titulo: 'Dar de baja',
+        destacado: hermano.nombreCompleto,
+        mensaje: 'dejará de aparecer en el listado y en el buscador de hermanos. Su historial de túnicas se conserva.',
+        textoConfirmar: 'Dar de baja',
+        destructiva: true,
+      })
+      .pipe(switchMap(() => this.hermanosService.darDeBaja(hermano.id)))
       .subscribe({
         next: () => {
-          this.snackBar.open(`${hermano.nombreCompleto} se ha dado de baja`, undefined, { duration: 3000 });
+          this.avisos.exito(`${hermano.nombreCompleto} se ha dado de baja`);
           this.router.navigate(['/hermanos']);
         },
         error: (err: unknown) => this.error.set(mensajeError(err, 'No se ha podido dar de baja.')),

@@ -5,13 +5,15 @@ import { catchError, switchMap, throwError } from 'rxjs';
 
 import { AuthService, URL_AUTH } from './auth.service';
 
+const RUTAS_PUBLICAS = [`${URL_AUTH}/login`, `${URL_AUTH}/refresh`, `${URL_AUTH}/logout`];
+
 /**
  * Añade "Authorization: Bearer <token>" a las peticiones a la API.
  * Si el backend responde 401 (token de acceso caducado), renueva la sesión y repite la petición una vez;
  * si tampoco se puede renovar, lleva al login.
  */
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  if (!req.url.startsWith('/api/') || req.url.startsWith(`${URL_AUTH}/`)) {
+  if (!req.url.startsWith('/api/') || RUTAS_PUBLICAS.includes(req.url)) {
     return next(req);
   }
 

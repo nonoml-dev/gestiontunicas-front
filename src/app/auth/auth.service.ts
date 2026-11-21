@@ -1,10 +1,10 @@
-import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Injectable, PLATFORM_ID, computed, inject, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, finalize, shareReplay, tap, throwError } from 'rxjs';
 
-import { Sesion } from './auth.models';
+import { Sesion, Usuario } from './auth.models';
+import { Funcionalidad, Nivel, tienePermiso } from './permisos';
 
 const CLAVE_SESION = 'gestiontunicas.sesion';
 export const URL_AUTH = '/api/v1/auth';
@@ -17,7 +17,6 @@ export const URL_AUTH = '/api/v1/auth';
 export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
-  private readonly esNavegador = isPlatformBrowser(inject(PLATFORM_ID));
 
   private readonly sesion = signal<Sesion | null>(this.leerSesion());
   /** Renovación en curso: si varias peticiones reciben 401 a la vez, todas esperan a la misma. */
@@ -25,9 +24,9 @@ export class AuthService {
 
   readonly usuario = computed(() => this.sesion()?.usuario ?? null);
 
-  /** Si el usuario tiene alguno de los roles (ADMIN, PRIOSTE...). Solo sirve para mostrar u ocultar; el backend lo vuelve a comprobar. */
-  tieneAlgunRol(roles: readonly string[]): boolean {
-    return this.usuario()?.roles.some((rol) => roles.includes(rol)) ?? false;
+  /** Si el usuario llega a ese nivel según la matriz. Solo sirve para mostrar u ocultar; el backend lo vuelve a comprobar. */
+  puede(funcionalidad: Funcionalidad, nivel: Nivel = 'C'): boolean {
+    return tienePermiso(this.usuario()?.roles ?? [], funcionalidad, nivel);
   }
 
   /** Hay sesión mientras el refresh token no haya caducado (el token de acceso se renueva solo). */
@@ -48,6 +47,21 @@ export class AuthService {
     return this.http
       .post<Sesion>(`${URL_AUTH}/login`, { username, password })
       .pipe(tap((sesion) => this.guardarSesion(sesion)));
+  }
+
+  /** Cambia la contraseña. El backend cierra las sesiones anteriores y devuelve una nueva. */
+  cambiarPassword(passwordActual: string, passwordNueva: string): Observable<Sesion> {
+    return this.http
+      .post<Sesion>(`${URL_AUTH}/cambiar-password`, { passwordActual, passwordNueva })
+      .pipe(tap((sesion) => this.guardarSesion(sesion)));
+  }
+
+  /** Refleja en la sesión los datos propios editados (nombre, cargo...) sin volver a entrar. */
+  actualizarUsuario(usuario: Usuario): void {
+    const sesion = this.sesion();
+    if (sesion) {
+      this.guardarSesion({ ...sesion, usuario });
+    }
   }
 
   /** Pide un token de acceso nuevo con el refresh token. Si falla, la sesión se borra. */
@@ -81,22 +95,15 @@ export class AuthService {
   /** Borra la sesión local sin llamar al servidor (sesión caducada o rechazada). */
   borrarSesion(): void {
     this.sesion.set(null);
-    if (this.esNavegador) {
-      sessionStorage.removeItem(CLAVE_SESION);
-    }
+    sessionStorage.removeItem(CLAVE_SESION);
   }
 
   private guardarSesion(sesion: Sesion): void {
     this.sesion.set(sesion);
-    if (this.esNavegador) {
-      sessionStorage.setItem(CLAVE_SESION, JSON.stringify(sesion));
-    }
+    sessionStorage.setItem(CLAVE_SESION, JSON.stringify(sesion));
   }
 
   private leerSesion(): Sesion | null {
-    if (!this.esNavegador) {
-      return null;
-    }
     const guardada = sessionStorage.getItem(CLAVE_SESION);
     if (!guardada) {
       return null;

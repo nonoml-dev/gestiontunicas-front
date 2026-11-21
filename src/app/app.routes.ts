@@ -1,7 +1,6 @@
 import { Routes } from '@angular/router';
 
-import { authGuard, invitadoGuard, rolGuard } from './auth/auth.guards';
-import { ROLES_GESTION_HERMANOS } from './hermanos/hermano.models';
+import { authGuard, invitadoGuard, passwordAlDiaGuard, permisoGuard } from './auth/auth.guards';
 
 export const routes: Routes = [
   {
@@ -11,8 +10,14 @@ export const routes: Routes = [
     loadComponent: () => import('./auth/login/login').then((m) => m.Login),
   },
   {
-    path: '',
+    path: 'cambiar-password',
+    title: 'Cambiar contraseña · Hermandad de la Quinta Angustia',
     canActivate: [authGuard],
+    loadComponent: () => import('./auth/cambiar-password/cambiar-password').then((m) => m.CambiarPassword),
+  },
+  {
+    path: '',
+    canActivate: [authGuard, passwordAlDiaGuard],
     loadComponent: () => import('./layout/shell/shell').then((m) => m.Shell),
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'inicio' },
@@ -32,12 +37,12 @@ export const routes: Routes = [
         path: 'hermanos/importar',
         title: 'Importar Excel · Hermandad de la Quinta Angustia',
         data: { titulo: 'Hermanos' },
-        canActivate: [rolGuard(ROLES_GESTION_HERMANOS, '/hermanos')],
+        canActivate: [permisoGuard('importarHermanos', 'G', '/hermanos')],
         loadComponent: () => import('./hermanos/importacion/importar-hermanos').then((m) => m.ImportarHermanos),
       },
       {
         path: 'hermanos/nuevo',
-        canActivate: [rolGuard(ROLES_GESTION_HERMANOS, '/hermanos')],
+        canActivate: [permisoGuard('hermanos', 'G', '/hermanos')],
         title: 'Nuevo hermano · Hermandad de la Quinta Angustia',
         data: { titulo: 'Hermanos' },
         loadComponent: () => import('./hermanos/detalle/hermano-detalle').then((m) => m.HermanoDetalle),
@@ -47,6 +52,13 @@ export const routes: Routes = [
         title: 'Hermano · Hermandad de la Quinta Angustia',
         data: { titulo: 'Hermanos' },
         loadComponent: () => import('./hermanos/detalle/hermano-detalle').then((m) => m.HermanoDetalle),
+      },
+      {
+        path: 'administracion/usuarios',
+        title: 'Usuarios · Hermandad de la Quinta Angustia',
+        data: { titulo: 'Usuarios' },
+        canActivate: [permisoGuard('usuarios', 'G', '/inicio')],
+        loadComponent: () => import('./usuarios/listado/usuarios-listado').then((m) => m.UsuariosListado),
       },
     ],
   },

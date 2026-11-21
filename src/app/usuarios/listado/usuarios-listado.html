@@ -1,0 +1,116 @@
+<div class="acciones-pagina">
+  <button mat-flat-button type="button" (click)="nuevo()">
+    <mat-icon>person_add</mat-icon>
+    Nuevo usuario
+  </button>
+</div>
+
+<mat-form-field appearance="outline" class="buscador" subscriptSizing="dynamic">
+  <mat-icon matPrefix>search</mat-icon>
+  <mat-label>Buscar usuario</mat-label>
+  <input #buscador matInput type="search" autocomplete="off" [value]="texto()" (input)="buscar(buscador.value)" />
+</mat-form-field>
+
+@if (errorAccion(); as mensaje) {
+  <p class="error-accion" role="alert">{{ mensaje }}</p>
+}
+
+<app-tabla-paginada
+  [filas]="filas()"
+  [columnas]="columnas"
+  [total]="filtrados().length"
+  [pagina]="pagina()"
+  [tamano]="tamano()"
+  [cargando]="cargando()"
+  [error]="error()"
+  [mensajeVacio]="mensajeVacio()"
+  (filaPulsada)="editar($event)"
+  (paginaCambiada)="cambiarPagina($event)"
+>
+  <ng-container matColumnDef="nombre">
+    <th mat-header-cell *matHeaderCellDef>Nombre</th>
+    <td mat-cell *matCellDef="let u">
+      <span class="nombre">{{ nombreCompleto(u) }}</span>
+      @if (esPropio(u)) {
+        <span class="tu-cuenta">(tú)</span>
+      }
+      <span class="username">{{ u.username }}</span>
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="cargo">
+    <th mat-header-cell *matHeaderCellDef>Cargo</th>
+    <td mat-cell *matCellDef="let u">{{ u.cargoEtiqueta }}</td>
+  </ng-container>
+
+  <ng-container matColumnDef="roles">
+    <th mat-header-cell *matHeaderCellDef>Rol</th>
+    <td mat-cell *matCellDef="let u">
+      @for (rol of u.roles; track rol; let ultimo = $last) {
+        {{ etiquetaRol(rol) }}{{ ultimo ? '' : ', ' }}
+      }
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="estado">
+    <th mat-header-cell *matHeaderCellDef>Activo</th>
+    <td mat-cell *matCellDef="let u">
+      <mat-chip-set class="estados">
+        <mat-chip [class.inactivo]="!u.activo">{{ u.activo ? 'Activo' : 'Inactivo' }}</mat-chip>
+        @if (u.bloqueado) {
+          <mat-chip class="inactivo"><mat-icon matChipAvatar>block</mat-icon>Bloqueado</mat-chip>
+        }
+        @if (u.debeCambiarPassword) {
+          <mat-chip class="inactivo">Contraseña pendiente</mat-chip>
+        }
+      </mat-chip-set>
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="acciones">
+    <th mat-header-cell *matHeaderCellDef><span class="oculto">Acciones</span></th>
+    <td
+      mat-cell
+      *matCellDef="let u"
+      class="celda-acciones"
+      (click)="$event.stopPropagation()"
+      (keydown.enter)="$event.stopPropagation()"
+    >
+      <button
+        mat-icon-button
+        type="button"
+        [matMenuTriggerFor]="menuFila"
+        [matMenuTriggerData]="{ u }"
+        [attr.aria-label]="'Acciones de ' + nombreCompleto(u)"
+      >
+        <mat-icon>more_vert</mat-icon>
+      </button>
+    </td>
+  </ng-container>
+</app-tabla-paginada>
+
+<mat-menu #menuFila="matMenu" xPosition="before">
+  <ng-template matMenuContent let-u="u">
+    <button mat-menu-item type="button" (click)="editar(u)">
+      <mat-icon>edit</mat-icon>
+      <span>Editar</span>
+    </button>
+    @if (!esPropio(u)) {
+      <button mat-menu-item type="button" (click)="restablecer(u)">
+        <mat-icon>lock_reset</mat-icon>
+        <span>Restablecer contraseña</span>
+      </button>
+      @if (u.activo) {
+        <button mat-menu-item type="button" (click)="desactivar(u)">
+          <mat-icon>person_off</mat-icon>
+          <span>Desactivar</span>
+        </button>
+      } @else {
+        <button mat-menu-item type="button" (click)="activar(u)">
+          <mat-icon>how_to_reg</mat-icon>
+          <span>Activar</span>
+        </button>
+      }
+    }
+  </ng-template>
+</mat-menu>

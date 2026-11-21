@@ -11,7 +11,7 @@
     </div>
 
     <mat-nav-list>
-      @for (opcion of opciones; track opcion.ruta) {
+      @for (opcion of opciones(); track opcion.ruta) {
         <a
           mat-list-item
           class="opcion"
@@ -23,6 +23,22 @@
         >
           <mat-icon matListItemIcon>{{ opcion.icono }}</mat-icon>
           <span matListItemTitle>{{ opcion.texto }}</span>
+        </a>
+      }
+      @if (veAdministracion()) {
+        <mat-divider class="divisor-menu" />
+        <div class="seccion-menu">Administración</div>
+        <a
+          mat-list-item
+          class="opcion"
+          routerLink="/administracion/usuarios"
+          routerLinkActive="activa"
+          #enlaceUsuarios="routerLinkActive"
+          [activated]="enlaceUsuarios.isActive"
+          (click)="esTablet() && barra.close()"
+        >
+          <mat-icon matListItemIcon>admin_panel_settings</mat-icon>
+          <span matListItemTitle>Usuarios</span>
         </a>
       }
     </mat-nav-list>
@@ -53,6 +69,11 @@
           </div>
           <mat-divider />
         }
+        <button mat-menu-item type="button" (click)="cambiarPassword()">
+          <mat-icon>lock_reset</mat-icon>
+          <span>Cambiar contraseña</span>
+        </button>
+        <mat-divider />
         <button mat-menu-item type="button" (click)="cerrarSesion()">
           <mat-icon>logout</mat-icon>
           <span>Cerrar sesión</span>
