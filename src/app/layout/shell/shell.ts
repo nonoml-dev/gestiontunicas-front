@@ -49,6 +49,7 @@ export class Shell {
   private readonly todasLasOpciones: OpcionMenu[] = [
     { icono: 'home', texto: 'Inicio', ruta: '/inicio' },
     { icono: 'groups', texto: 'Hermanos', ruta: '/hermanos', funcionalidad: 'hermanos' },
+    { icono: 'checkroom', texto: 'Túnicas', ruta: '/tunicas', funcionalidad: 'tunicas' },
   ];
 
   protected readonly opciones = computed(() =>
