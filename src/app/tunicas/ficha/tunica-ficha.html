@@ -1,0 +1,111 @@
+<a mat-button routerLink="/tunicas" class="volver">
+  <mat-icon>arrow_back</mat-icon>
+  Volver al inventario
+</a>
+
+@if (cargando()) {
+  <mat-progress-bar mode="indeterminate" class="progreso" />
+}
+
+@if (tunica(); as t) {
+  <header class="cabecera">
+    <div class="titulos">
+      <div class="linea-titulo">
+        <h2 class="codigo">Túnica {{ t.codigo }}</h2>
+        <mat-chip-set aria-label="Estado de la túnica">
+          <mat-chip class="chip" [class.positivo]="t.estado === 'DISPONIBLE'">{{
+            textoEstado(t.estado)
+          }}</mat-chip>
+          @if (t.monaguillo) {
+            <mat-chip class="chip">Monaguillo</mat-chip>
+          }
+        </mat-chip-set>
+      </div>
+      <span class="medida"
+        >{{ t.medidaCm }} + {{ t.dobladilloCm }} = <strong>{{ t.medidaTotalCm }} cm</strong></span
+      >
+    </div>
+
+    @if (puedeGestionar && (puedeEditar() || puedeDarDeBaja())) {
+      <button
+        mat-icon-button
+        type="button"
+        [matMenuTriggerFor]="acciones"
+        aria-label="Acciones"
+        matTooltip="Acciones"
+      >
+        <mat-icon>more_vert</mat-icon>
+      </button>
+      <mat-menu #acciones="matMenu" xPosition="before">
+        @if (puedeEditar()) {
+          <button mat-menu-item type="button" (click)="editar()">
+            <mat-icon>edit</mat-icon>
+            <span>Editar</span>
+          </button>
+        }
+        @if (puedeDarDeBaja()) {
+          <button mat-menu-item type="button" (click)="darDeBaja()">
+            <mat-icon>delete_outline</mat-icon>
+            <span>Dar de baja</span>
+          </button>
+        }
+      </mat-menu>
+    }
+  </header>
+
+  @if (error(); as mensaje) {
+    <p class="error" role="alert">{{ mensaje }}</p>
+  }
+
+  <mat-card appearance="outlined">
+    <mat-card-content>
+      <dl class="datos">
+        <div>
+          <dt>Fecha de alta</dt>
+          <dd>{{ t.fechaAlta | date: 'dd/MM/yyyy' }}</dd>
+        </div>
+        @if (t.fechaBaja) {
+          <div>
+            <dt>Fecha de baja</dt>
+            <dd>{{ t.fechaBaja | date: 'dd/MM/yyyy' }}</dd>
+          </div>
+          <div class="ancho">
+            <dt>Motivo de la baja</dt>
+            <dd>{{ t.motivoBaja }}</dd>
+          </div>
+        }
+        @if (t.fechaPropiedad) {
+          <div>
+            <dt>Propiedad del hermano desde</dt>
+            <dd>{{ t.fechaPropiedad | date: 'dd/MM/yyyy' }}</dd>
+          </div>
+        }
+        <div class="ancho">
+          <dt>Observaciones</dt>
+          <dd [class.sin-dato]="!t.observaciones">{{ t.observaciones || 'Sin observaciones' }}</dd>
+        </div>
+      </dl>
+    </mat-card-content>
+  </mat-card>
+
+  <section>
+    <h3 class="seccion">Piezas</h3>
+    <mat-card appearance="outlined">
+      <ul class="piezas">
+        @for (pieza of piezas(); track pieza.tipo) {
+          <li class="pieza">
+            <mat-icon class="icono">{{ piezasInfo[pieza.tipo].icono }}</mat-icon>
+            <span class="nombre">{{ piezasInfo[pieza.tipo].texto }}</span>
+            <mat-chip-set>
+              <mat-chip class="chip" [class.positivo]="pieza.estado === 'BUEN_ESTADO'">
+                {{ estadosPieza[pieza.estado] }}
+              </mat-chip>
+            </mat-chip-set>
+          </li>
+        }
+      </ul>
+    </mat-card>
+  </section>
+} @else if (error(); as mensaje) {
+  <p class="error" role="alert">{{ mensaje }}</p>
+}

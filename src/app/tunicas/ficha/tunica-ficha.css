@@ -1,0 +1,143 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 880px;
+}
+
+.volver {
+  align-self: flex-start;
+}
+
+.progreso {
+  --mat-progress-bar-active-indicator-color: #889c57;
+  --mat-progress-bar-track-height: 2px;
+  --mat-progress-bar-active-indicator-height: 2px;
+}
+
+.cabecera {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.titulos {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.linea-titulo {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.codigo {
+  margin: 0;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 28px;
+  font-weight: 600;
+  color: #060830;
+}
+
+.medida {
+  font-size: 16px;
+  color: rgb(6 8 48 / 70%);
+  font-variant-numeric: tabular-nums;
+}
+
+.medida strong {
+  color: #060830;
+}
+
+/* Estados con borde azul noche; el positivo, con fondo oliva (DESIGN.md §3). */
+.chip {
+  --mat-chip-outline-width: 1px;
+  --mat-chip-outline-color: #060830;
+  --mat-chip-label-text-color: #060830;
+  --mat-chip-elevated-container-color: transparent;
+}
+
+.chip.positivo {
+  --mat-chip-outline-color: #889c57;
+  --mat-chip-elevated-container-color: #889c57;
+}
+
+.datos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin: 8px 0;
+}
+
+.datos .ancho {
+  grid-column: 1 / -1;
+}
+
+dt {
+  font-size: 12px;
+  color: rgb(6 8 48 / 60%);
+}
+
+dd {
+  margin: 2px 0 0;
+  font-size: 14px;
+  color: #060830;
+  white-space: pre-line;
+  font-variant-numeric: tabular-nums;
+}
+
+.sin-dato {
+  color: rgb(6 8 48 / 60%);
+}
+
+.seccion {
+  margin: 8px 0 12px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #060830;
+}
+
+.piezas {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pieza {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 56px;
+  padding: 0 16px;
+  border-bottom: 1px solid rgb(6 8 48 / 12%);
+}
+
+.pieza:last-child {
+  border-bottom: none;
+}
+
+.icono {
+  color: rgb(6 8 48 / 70%);
+}
+
+.nombre {
+  flex: 1;
+  font-size: 14px;
+  color: #060830;
+}
+
+.error {
+  margin: 0;
+  font-size: 14px;
+  color: var(--mat-sys-error);
+}
+
+@media (max-width: 599.98px) {
+  .datos {
+    grid-template-columns: 1fr;
+  }
+}
