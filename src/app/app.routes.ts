@@ -60,6 +60,13 @@ export const routes: Routes = [
         loadComponent: () => import('./tunicas/listado/tunicas-listado').then((m) => m.TunicasListado),
       },
       {
+        path: 'tunicas/importar',
+        title: 'Importar Excel · Hermandad de la Quinta Angustia',
+        data: { titulo: 'Túnicas' },
+        canActivate: [permisoGuard('tunicas', 'G', '/tunicas')],
+        loadComponent: () => import('./tunicas/importacion/importar-tunicas').then((m) => m.ImportarTunicas),
+      },
+      {
         path: 'tunicas/:id',
         title: 'Túnica · Hermandad de la Quinta Angustia',
         data: { titulo: 'Túnicas' },

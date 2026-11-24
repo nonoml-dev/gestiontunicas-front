@@ -11,6 +11,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { RouterLink } from '@angular/router';
 import { finalize, switchMap, tap } from 'rxjs';
 
+import { guardarFichero } from '../../comun/importacion/importacion-api';
 import { mensajeError } from '../../comun/mensaje-error';
 import { DecisionFila, Importacion, ImportacionFila } from './importacion.models';
 import { ImportacionService } from './importacion.service';
@@ -31,7 +32,7 @@ import { ImportacionService } from './importacion.service';
     MatTabsModule,
   ],
   templateUrl: './importar-hermanos.html',
-  styleUrl: './importar-hermanos.css',
+  styleUrl: '../../comun/importacion/asistente-importacion.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ImportarHermanos {
@@ -95,14 +96,7 @@ export class ImportarHermanos {
   protected descargarPlantilla(): void {
     this.error.set(null);
     this.importacionService.plantilla().subscribe({
-      next: (blob) => {
-        const url = URL.createObjectURL(blob);
-        const enlace = document.createElement('a');
-        enlace.href = url;
-        enlace.download = 'plantilla-hermanos.xlsx';
-        enlace.click();
-        URL.revokeObjectURL(url);
-      },
+      next: (blob) => guardarFichero(blob, 'plantilla-hermanos.xlsx'),
       error: (err: unknown) => this.error.set(mensajeError(err, 'No se ha podido descargar la plantilla.')),
     });
   }
