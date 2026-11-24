@@ -1,0 +1,67 @@
+.titulo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.campos {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.campos > mat-form-field:first-child {
+  padding-top: 4px;
+}
+
+.fila {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.total {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: #060830;
+  font-variant-numeric: tabular-nums;
+}
+
+.sin-dato,
+.nota {
+  color: rgb(6 8 48 / 70%);
+}
+
+.aviso {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
+  padding: 8px 12px;
+  border: 1px solid #060830;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #060830;
+}
+
+.nota {
+  margin: 0;
+  font-size: 13px;
+}
+
+.error {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--mat-sys-error);
+}
+
+@media (max-width: 599.98px) {
+  .fila {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}
+
+.tipo {
+  align-self: flex-start;
+}

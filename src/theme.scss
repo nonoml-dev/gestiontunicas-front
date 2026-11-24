@@ -16,7 +16,7 @@ html {
     (
       primary: #060830,
       on-primary: #ffffff,
-      secondary: #889c57,
+      secondary: #ba9b57,
       on-secondary: #060830,
       background: #f2efe6,
       on-background: #060830,
@@ -33,10 +33,10 @@ html {
     )
   );
 
-  // El foco de los campos va en verde oliva (solo el borde: el texto pequeño nunca en oliva).
+  // El foco de los campos va en dorado (solo el borde: el texto pequeño nunca en dorado).
   @include mat.form-field-overrides(
     (
-      outlined-focus-outline-color: #889c57,
+      outlined-focus-outline-color: #ba9b57,
       outlined-caret-color: #060830,
       outlined-focus-label-text-color: #060830,
     )

@@ -54,6 +54,25 @@ export const routes: Routes = [
         loadComponent: () => import('./hermanos/detalle/hermano-detalle').then((m) => m.HermanoDetalle),
       },
       {
+        path: 'tunicas',
+        title: 'Túnicas · Hermandad de la Quinta Angustia',
+        data: { titulo: 'Túnicas' },
+        loadComponent: () => import('./tunicas/listado/tunicas-listado').then((m) => m.TunicasListado),
+      },
+      {
+        path: 'tunicas/importar',
+        title: 'Importar Excel · Hermandad de la Quinta Angustia',
+        data: { titulo: 'Túnicas' },
+        canActivate: [permisoGuard('tunicas', 'G', '/tunicas')],
+        loadComponent: () => import('./tunicas/importacion/importar-tunicas').then((m) => m.ImportarTunicas),
+      },
+      {
+        path: 'tunicas/:id',
+        title: 'Túnica · Hermandad de la Quinta Angustia',
+        data: { titulo: 'Túnicas' },
+        loadComponent: () => import('./tunicas/ficha/tunica-ficha').then((m) => m.TunicaFicha),
+      },
+      {
         path: 'administracion/usuarios',
         title: 'Usuarios · Hermandad de la Quinta Angustia',
         data: { titulo: 'Usuarios' },

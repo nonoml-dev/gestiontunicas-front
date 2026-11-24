@@ -36,7 +36,7 @@
 }
 
 .estados {
-  --mat-chip-elevated-container-color: rgb(136 156 87 / 16%);
+  --mat-chip-elevated-container-color: rgb(186 155 87 / 16%);
   --mat-chip-label-text-color: #060830;
   --mat-chip-outline-color: rgb(6 8 48 / 38%);
 }

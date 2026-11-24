@@ -1,0 +1,108 @@
+@if (puedeCrear) {
+  <div class="acciones">
+    <a mat-button routerLink="/tunicas/importar">
+      <mat-icon>upload_file</mat-icon>
+      Importar Excel
+    </a>
+    <button mat-flat-button type="button" (click)="nueva()">
+      <mat-icon>add</mat-icon>
+      Nueva túnica
+    </button>
+  </div>
+}
+
+<div class="filtros">
+  <mat-chip-listbox
+    multiple
+    class="estados"
+    aria-label="Filtrar por estado"
+    [value]="estadosElegidos()"
+    (change)="filtrarPorEstado($event)"
+  >
+    @for (estado of estados; track estado.valor) {
+      <mat-chip-option [value]="estado.valor">{{ estado.texto }}</mat-chip-option>
+    }
+  </mat-chip-listbox>
+
+  <div class="medida">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="campo-medida">
+      <mat-label>Medida total desde</mat-label>
+      <input
+        #desde
+        matInput
+        type="number"
+        inputmode="numeric"
+        [min]="medidaMinima"
+        [max]="medidaMaxima"
+        [value]="medidaDesde()"
+        (input)="medidaDesde.set(desde.value)"
+      />
+      <span matTextSuffix>cm</span>
+    </mat-form-field>
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="campo-medida">
+      <mat-label>Hasta</mat-label>
+      <input
+        #hasta
+        matInput
+        type="number"
+        inputmode="numeric"
+        [min]="medidaMinima"
+        [max]="medidaMaxima"
+        [value]="medidaHasta()"
+        (input)="medidaHasta.set(hasta.value)"
+      />
+      <span matTextSuffix>cm</span>
+    </mat-form-field>
+  </div>
+</div>
+
+<p class="nota" [class.error]="rangoNoValido()" role="status">
+  @if (rangoNoValido()) {
+    La medida "desde" no puede ser mayor que "hasta".
+  } @else if (!estadosElegidos().length) {
+    Sin filtro de estado no salen las túnicas que son propiedad de un hermano.
+  }
+</p>
+
+<app-tabla-paginada
+  matSort
+  matSortActive="codigo"
+  matSortDirection="asc"
+  matSortDisableClear
+  (matSortChange)="cambiarOrden($event)"
+  [filas]="tunicas()"
+  [columnas]="columnas"
+  [total]="total()"
+  [pagina]="pagina()"
+  [tamano]="tamano()"
+  [cargando]="cargando()"
+  [error]="error()"
+  [mensajeVacio]="mensajeVacio()"
+  (filaPulsada)="abrir($event)"
+  (paginaCambiada)="cambiarPagina($event)"
+>
+  <ng-container matColumnDef="codigo">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header>Código</th>
+    <td mat-cell *matCellDef="let t" class="cifra codigo">{{ t.codigo }}</td>
+  </ng-container>
+
+  <ng-container matColumnDef="medidaCm">
+    <th mat-header-cell *matHeaderCellDef class="numero">Medida</th>
+    <td mat-cell *matCellDef="let t" class="numero">{{ t.medidaCm }} cm</td>
+  </ng-container>
+
+  <ng-container matColumnDef="dobladilloCm">
+    <th mat-header-cell *matHeaderCellDef class="numero">Dobladillo</th>
+    <td mat-cell *matCellDef="let t" class="numero">{{ t.dobladilloCm }} cm</td>
+  </ng-container>
+
+  <ng-container matColumnDef="medidaTotal">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header class="numero">Total</th>
+    <td mat-cell *matCellDef="let t" class="numero total">{{ t.medidaTotalCm }} cm</td>
+  </ng-container>
+
+  <ng-container matColumnDef="estado">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header>Estado</th>
+    <td mat-cell *matCellDef="let t">{{ textoEstado(t.estado) }}</td>
+  </ng-container>
+</app-tabla-paginada>
