@@ -1,0 +1,56 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.estados {
+  flex: 1 1 480px;
+  --mat-chip-elevated-selected-container-color: rgb(136 156 87 / 16%);
+  --mat-chip-selected-label-text-color: #060830;
+  --mat-chip-with-icon-selected-icon-color: #060830;
+  --mat-chip-outline-color: rgb(6 8 48 / 38%);
+}
+
+.medida {
+  display: flex;
+  gap: 8px;
+}
+
+.campo-medida {
+  width: 210px;
+  --mat-form-field-outlined-container-shape: 4px;
+}
+
+.nota {
+  margin: -8px 0 0;
+  min-height: 20px;
+  font-size: 12px;
+  color: rgb(6 8 48 / 60%);
+}
+
+.nota.error {
+  color: var(--mat-sys-error);
+}
+
+.cifra,
+.numero {
+  font-variant-numeric: tabular-nums;
+}
+
+.numero {
+  white-space: nowrap;
+}
+
+.codigo,
+.total {
+  font-weight: 500;
+}
