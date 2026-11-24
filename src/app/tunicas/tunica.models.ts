@@ -123,3 +123,44 @@ export const ESTADOS_SIN_BAJA: readonly EstadoTunica[] = [
   'PROPIEDAD_HERMANO',
   'BAJA',
 ];
+
+export type TipoReparacion = 'REPARACION' | 'REPOSICION';
+export type EstadoReparacion = 'PENDIENTE' | 'EN_CURSO' | 'FINALIZADA';
+
+export const TIPOS_REPARACION: Readonly<Record<TipoReparacion, string>> = {
+  REPARACION: 'Reparación',
+  REPOSICION: 'Reposición',
+};
+
+export const ESTADOS_REPARACION: Readonly<Record<EstadoReparacion, string>> = {
+  PENDIENTE: 'Pendiente',
+  EN_CURSO: 'En curso',
+  FINALIZADA: 'Terminada',
+};
+
+/** Reparación o reposición de una pieza (ReparacionDTO). Fechas en yyyy-MM-dd. */
+export interface Reparacion {
+  id: number;
+  piezaId: number;
+  tipoPieza: TipoPieza;
+  /** Devolución en la que se detectó el daño, si viene de una revisión. */
+  devolucionId: number | null;
+  tipo: TipoReparacion;
+  descripcion: string;
+  estado: EstadoReparacion;
+  fechaInicio: string;
+  fechaFin: string | null;
+  coste: number | null;
+}
+
+/** Registrar o actualizar una reparación (ReparacionRequest). */
+export interface ReparacionRequest {
+  tipoPieza: TipoPieza;
+  tipo: TipoReparacion;
+  descripcion: string;
+  /** Nulo = pendiente. */
+  estado: EstadoReparacion | null;
+  fechaInicio: string;
+  fechaFin: string | null;
+  coste: number | null;
+}

@@ -23,7 +23,7 @@
 .progreso {
   position: absolute;
   inset: 0 0 auto;
-  --mat-progress-bar-active-indicator-color: #889c57;
+  --mat-progress-bar-active-indicator-color: #ba9b57;
   --mat-progress-bar-track-height: 2px;
   --mat-progress-bar-active-indicator-height: 2px;
 }
@@ -48,14 +48,14 @@ mat-stepper {
 .zona:hover,
 .zona.arrastrando,
 .zona:focus-within {
-  border-color: #889c57;
+  border-color: #ba9b57;
 }
 
 .icono-zona {
   width: 40px;
   height: 40px;
   font-size: 40px;
-  color: #889c57;
+  color: #ba9b57;
 }
 
 .zona-texto {
@@ -157,7 +157,7 @@ table {
   width: 48px;
   height: 48px;
   font-size: 48px;
-  color: #889c57;
+  color: #ba9b57;
 }
 
 .error {

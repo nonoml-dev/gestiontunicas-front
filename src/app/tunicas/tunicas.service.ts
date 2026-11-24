@@ -5,6 +5,8 @@ import { Observable } from 'rxjs';
 import { Pagina } from '../hermanos/hermano.models';
 import {
   AvisoCodigo,
+  Reparacion,
+  ReparacionRequest,
   FiltroTunicas,
   OrdenTunicas,
   Tunica,
@@ -64,5 +66,22 @@ export class TunicasService {
   /** Si el código perteneció a una túnica que ahora es propiedad de un hermano. Solo informa. */
   avisoCodigo(codigo: string): Observable<AvisoCodigo> {
     return this.http.get<AvisoCodigo>(`${URL}/aviso-codigo`, { params: { codigo } });
+  }
+
+  /** Reparaciones de sus piezas, de la más reciente a la más antigua. */
+  reparaciones(tunicaId: number): Observable<Reparacion[]> {
+    return this.http.get<Reparacion[]>(`${URL}/${tunicaId}/reparaciones`);
+  }
+
+  registrarReparacion(tunicaId: number, request: ReparacionRequest): Observable<Reparacion> {
+    return this.http.post<Reparacion>(`${URL}/${tunicaId}/reparaciones`, request);
+  }
+
+  actualizarReparacion(
+    tunicaId: number,
+    id: number,
+    request: ReparacionRequest,
+  ): Observable<Reparacion> {
+    return this.http.put<Reparacion>(`${URL}/${tunicaId}/reparaciones/${id}`, request);
   }
 }
