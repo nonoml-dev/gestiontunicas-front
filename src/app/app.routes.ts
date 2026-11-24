@@ -60,6 +60,12 @@ export const routes: Routes = [
         loadComponent: () => import('./tunicas/listado/tunicas-listado').then((m) => m.TunicasListado),
       },
       {
+        path: 'tunicas/:id',
+        title: 'Túnica · Hermandad de la Quinta Angustia',
+        data: { titulo: 'Túnicas' },
+        loadComponent: () => import('./tunicas/ficha/tunica-ficha').then((m) => m.TunicaFicha),
+      },
+      {
         path: 'administracion/usuarios',
         title: 'Usuarios · Hermandad de la Quinta Angustia',
         data: { titulo: 'Usuarios' },

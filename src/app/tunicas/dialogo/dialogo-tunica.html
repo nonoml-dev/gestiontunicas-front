@@ -1,0 +1,95 @@
+<h2 mat-dialog-title class="titulo">{{ editando ? 'Editar túnica' : 'Nueva túnica' }}</h2>
+
+<form [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+  <mat-dialog-content class="campos">
+    <mat-form-field appearance="outline">
+      <mat-label>Código</mat-label>
+      <input
+        matInput
+        formControlName="codigo"
+        maxlength="5"
+        autocomplete="off"
+        required
+        (blur)="normalizarCampoCodigo()"
+      />
+      <mat-hint>Del 1 al 999, o M-001 para las de monaguillo</mat-hint>
+      @if (form.controls.codigo.invalid) {
+        <mat-error>Un número del 1 al 999, o M-XXX para las de monaguillo</mat-error>
+      }
+    </mat-form-field>
+
+    @if (codigoFueDeHermano()) {
+      <p class="aviso" role="status">
+        <mat-icon>info</mat-icon>
+        Este código era de una túnica que ahora es propiedad de un hermano. Se puede reutilizar.
+      </p>
+    }
+
+    <div class="fila">
+      <mat-form-field appearance="outline">
+        <mat-label>Medida</mat-label>
+        <input
+          matInput
+          type="number"
+          inputmode="numeric"
+          formControlName="medidaCm"
+          [min]="medida.min"
+          [max]="medida.max"
+          required
+        />
+        <span matTextSuffix>cm</span>
+        @if (form.controls.medidaCm.invalid) {
+          <mat-error>Entre {{ medida.min }} y {{ medida.max }} cm</mat-error>
+        }
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Dobladillo</mat-label>
+        <input
+          matInput
+          type="number"
+          inputmode="numeric"
+          formControlName="dobladilloCm"
+          [min]="dobladillo.min"
+          [max]="dobladillo.max"
+          required
+        />
+        <span matTextSuffix>cm</span>
+        @if (form.controls.dobladilloCm.invalid) {
+          <mat-error>Entre {{ dobladillo.min }} y {{ dobladillo.max }} cm</mat-error>
+        }
+      </mat-form-field>
+    </div>
+
+    <p class="total" aria-live="polite">
+      Medida total:
+      @if (medidaTotal(); as total) {
+        <strong>{{ total }}</strong>
+      } @else {
+        <span class="sin-dato">indica la medida y el dobladillo</span>
+      }
+    </p>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Observaciones (opcional)</mat-label>
+      <textarea matInput formControlName="observaciones" rows="3"></textarea>
+    </mat-form-field>
+
+    @if (!editando) {
+      <p class="nota">
+        Se crea con sus 5 piezas en buen estado: túnica, capa, antifaz, cíngulo y talega.
+      </p>
+    }
+    @if (error(); as mensaje) {
+      <p class="error" role="alert">{{ mensaje }}</p>
+    }
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" class="cancelar" [mat-dialog-close]="undefined">
+      Cancelar
+    </button>
+    <button mat-flat-button type="submit" class="guardar" [disabled]="enviando()">
+      {{ editando ? 'Guardar' : 'Crear túnica' }}
+    </button>
+  </mat-dialog-actions>
+</form>

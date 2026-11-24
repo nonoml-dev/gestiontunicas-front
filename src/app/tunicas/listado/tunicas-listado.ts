@@ -1,20 +1,28 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { MatButtonModule } from '@angular/material/button';
 import { MatChipListboxChange, MatChipsModule } from '@angular/material/chips';
+import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { PageEvent } from '@angular/material/paginator';
 import { MatSortModule, Sort } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
+import { Router } from '@angular/router';
 import { catchError, debounceTime, distinctUntilChanged, filter, of, switchMap, tap } from 'rxjs';
 
+import { AuthService } from '../../auth/auth.service';
+import { AvisosService } from '../../comun/avisos/avisos.service';
 import { mensajeError } from '../../comun/mensaje-error';
 import { TablaPaginada } from '../../comun/tabla-paginada/tabla-paginada';
+import { DatosDialogoTunica, DialogoTunica } from '../dialogo/dialogo-tunica';
 import {
   ESTADOS_TUNICA,
   EstadoTunica,
   FiltroTunicas,
   OrdenTunicas,
+  Tunica,
   TunicaResumen,
   textoEstadoTunica,
 } from '../tunica.models';
@@ -40,8 +48,10 @@ const MEDIDA_MAXIMA = 250;
 @Component({
   selector: 'app-tunicas-listado',
   imports: [
+    MatButtonModule,
     MatChipsModule,
     MatFormFieldModule,
+    MatIconModule,
     MatInputModule,
     MatSortModule,
     MatTableModule,
@@ -53,6 +63,11 @@ const MEDIDA_MAXIMA = 250;
 })
 export class TunicasListado {
   private readonly tunicasService = inject(TunicasService);
+  private readonly dialog = inject(MatDialog);
+  private readonly router = inject(Router);
+  private readonly avisos = inject(AvisosService);
+
+  protected readonly puedeCrear = inject(AuthService).puede('tunicas', 'G');
 
   protected readonly columnas = ['codigo', 'medidaCm', 'dobladilloCm', 'medidaTotal', 'estado'];
   protected readonly estados = ESTADOS_TUNICA;
@@ -149,6 +164,26 @@ export class TunicasListado {
     const campo = campos.find((c) => c === orden.active) ?? 'codigo';
     const direccion = orden.direction === 'desc' ? 'desc' : 'asc';
     this.consulta.update((c) => ({ ...c, orden: campo, direccion, pagina: 0 }));
+  }
+
+  protected abrir(tunica: TunicaResumen): void {
+    this.router.navigate(['/tunicas', tunica.id]);
+  }
+
+  /** "Nueva túnica": al crearla se abre su ficha. */
+  protected nueva(): void {
+    this.dialog
+      .open<DialogoTunica, DatosDialogoTunica, Tunica>(DialogoTunica, {
+        data: { tunica: null },
+        width: '520px',
+        maxWidth: '95vw',
+      })
+      .afterClosed()
+      .pipe(filter((creada): creada is Tunica => creada !== undefined))
+      .subscribe((creada) => {
+        this.avisos.exito(`Túnica ${creada.codigo} creada`);
+        this.router.navigate(['/tunicas', creada.id]);
+      });
   }
 
   protected cambiarPagina(evento: PageEvent): void {
