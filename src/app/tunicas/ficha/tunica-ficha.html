@@ -26,7 +26,7 @@
       >
     </div>
 
-    @if (puedeGestionar && (puedeEditar() || puedeDarDeBaja())) {
+    @if (puedeGestionar && (puedeEditar() || puedeReparar() || puedeDarDeBaja())) {
       <button
         mat-icon-button
         type="button"
@@ -41,6 +41,12 @@
           <button mat-menu-item type="button" (click)="editar()">
             <mat-icon>edit</mat-icon>
             <span>Editar</span>
+          </button>
+        }
+        @if (puedeReparar()) {
+          <button mat-menu-item type="button" (click)="registrarReparacion()">
+            <mat-icon>build</mat-icon>
+            <span>Registrar reparación</span>
           </button>
         }
         @if (puedeDarDeBaja()) {
@@ -88,24 +94,89 @@
     </mat-card-content>
   </mat-card>
 
-  <section>
-    <h3 class="seccion">Piezas</h3>
-    <mat-card appearance="outlined">
-      <ul class="piezas">
-        @for (pieza of piezas(); track pieza.tipo) {
-          <li class="pieza">
-            <mat-icon class="icono">{{ piezasInfo[pieza.tipo].icono }}</mat-icon>
-            <span class="nombre">{{ piezasInfo[pieza.tipo].texto }}</span>
-            <mat-chip-set>
-              <mat-chip class="chip" [class.positivo]="pieza.estado === 'BUEN_ESTADO'">
-                {{ estadosPieza[pieza.estado] }}
-              </mat-chip>
-            </mat-chip-set>
-          </li>
-        }
-      </ul>
-    </mat-card>
-  </section>
+  <mat-tab-group animationDuration="0ms" mat-stretch-tabs="false" class="pestanas">
+    <mat-tab label="Piezas">
+      <mat-card appearance="outlined" class="contenido-pestana">
+        <ul class="piezas">
+          @for (pieza of piezas(); track pieza.tipo) {
+            <li class="pieza">
+              <mat-icon class="icono">{{ piezasInfo[pieza.tipo].icono }}</mat-icon>
+              <span class="nombre">{{ piezasInfo[pieza.tipo].texto }}</span>
+              <mat-chip-set>
+                <mat-chip class="chip" [class.positivo]="pieza.estado === 'BUEN_ESTADO'">
+                  {{ estadosPieza[pieza.estado] }}
+                </mat-chip>
+              </mat-chip-set>
+            </li>
+          }
+        </ul>
+      </mat-card>
+    </mat-tab>
+
+    <mat-tab
+      [label]="
+        reparacionesAbiertas()
+          ? 'Reparaciones (' +
+            reparacionesAbiertas() +
+            (reparacionesAbiertas() === 1 ? ' abierta)' : ' abiertas)')
+          : 'Reparaciones'
+      "
+    >
+      <mat-card appearance="outlined" class="contenido-pestana">
+        <ul class="reparaciones">
+          @for (r of reparaciones(); track r.id) {
+            <li class="reparacion">
+              <mat-icon class="icono">{{ piezasInfo[r.tipoPieza].icono }}</mat-icon>
+              <div class="detalle">
+                <span class="nombre">
+                  {{ piezasInfo[r.tipoPieza].texto }} · {{ tiposReparacion[r.tipo] }}
+                </span>
+                <span class="descripcion">{{ r.descripcion }}</span>
+                <span class="fechas">
+                  Desde el {{ r.fechaInicio | date: 'dd/MM/yyyy' }}
+                  @if (r.fechaFin) {
+                    · terminada el {{ r.fechaFin | date: 'dd/MM/yyyy' }}
+                  }
+                </span>
+              </div>
+              <mat-chip-set>
+                <mat-chip class="chip" [class.positivo]="r.estado === 'FINALIZADA'">
+                  {{ estadosReparacion[r.estado] }}
+                </mat-chip>
+              </mat-chip-set>
+              @if (puedeGestionar && r.estado !== 'FINALIZADA') {
+                <button
+                  mat-icon-button
+                  type="button"
+                  [matMenuTriggerFor]="accionesReparacion"
+                  [attr.aria-label]="
+                    'Acciones de la reparación de ' + piezasInfo[r.tipoPieza].texto
+                  "
+                  matTooltip="Acciones"
+                >
+                  <mat-icon>more_vert</mat-icon>
+                </button>
+                <mat-menu #accionesReparacion="matMenu" xPosition="before">
+                  @if (r.estado === 'PENDIENTE') {
+                    <button mat-menu-item type="button" (click)="cambiarEstado(r, 'EN_CURSO')">
+                      <mat-icon>pending</mat-icon>
+                      <span>Marcar en curso</span>
+                    </button>
+                  }
+                  <button mat-menu-item type="button" (click)="cambiarEstado(r, 'FINALIZADA')">
+                    <mat-icon>task_alt</mat-icon>
+                    <span>Marcar como terminada</span>
+                  </button>
+                </mat-menu>
+              }
+            </li>
+          } @empty {
+            <li class="vacio">Esta túnica no tiene reparaciones.</li>
+          }
+        </ul>
+      </mat-card>
+    </mat-tab>
+  </mat-tab-group>
 } @else if (error(); as mensaje) {
   <p class="error" role="alert">{{ mensaje }}</p>
 }

@@ -30,7 +30,7 @@
 }
 
 .roles {
-  --mat-chip-elevated-selected-container-color: rgb(136 156 87 / 16%);
+  --mat-chip-elevated-selected-container-color: rgb(186 155 87 / 16%);
   --mat-chip-selected-label-text-color: #060830;
   --mat-chip-with-icon-selected-icon-color: #060830;
   --mat-chip-outline-color: rgb(6 8 48 / 38%);

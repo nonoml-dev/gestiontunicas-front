@@ -10,7 +10,7 @@
 }
 
 .progreso {
-  --mat-progress-bar-active-indicator-color: #889c57;
+  --mat-progress-bar-active-indicator-color: #ba9b57;
   --mat-progress-bar-track-height: 2px;
   --mat-progress-bar-active-indicator-height: 2px;
 }
@@ -53,7 +53,7 @@
   color: #060830;
 }
 
-/* Estados con borde azul noche; el positivo, con fondo oliva (DESIGN.md §3). */
+/* Estados con borde azul noche; el positivo, con fondo dorado (DESIGN.md §3). */
 .chip {
   --mat-chip-outline-width: 1px;
   --mat-chip-outline-color: #060830;
@@ -62,8 +62,8 @@
 }
 
 .chip.positivo {
-  --mat-chip-outline-color: #889c57;
-  --mat-chip-elevated-container-color: #889c57;
+  --mat-chip-outline-color: #ba9b57;
+  --mat-chip-elevated-container-color: #ba9b57;
 }
 
 .datos {
@@ -94,14 +94,16 @@ dd {
   color: rgb(6 8 48 / 60%);
 }
 
-.seccion {
-  margin: 8px 0 12px;
-  font-size: 16px;
-  font-weight: 500;
-  color: #060830;
+.pestanas {
+  --mat-tab-header-active-label-text-color: #060830;
 }
 
-.piezas {
+.contenido-pestana {
+  margin-top: 12px;
+}
+
+.piezas,
+.reparaciones {
   margin: 0;
   padding: 0;
   list-style: none;
@@ -116,16 +118,53 @@ dd {
   border-bottom: 1px solid rgb(6 8 48 / 12%);
 }
 
-.pieza:last-child {
+.pieza:last-child,
+.reparacion:last-child {
   border-bottom: none;
+}
+
+.reparacion {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgb(6 8 48 / 12%);
+}
+
+.detalle {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.descripcion {
+  font-size: 14px;
+  color: #060830;
+  white-space: pre-line;
+}
+
+.fechas {
+  font-size: 12px;
+  color: rgb(6 8 48 / 60%);
+  font-variant-numeric: tabular-nums;
+}
+
+.vacio {
+  padding: 24px 16px;
+  text-align: center;
+  color: rgb(6 8 48 / 60%);
 }
 
 .icono {
   color: rgb(6 8 48 / 70%);
 }
 
-.nombre {
+.pieza .nombre {
   flex: 1;
+}
+
+.nombre {
   font-size: 14px;
   color: #060830;
 }
