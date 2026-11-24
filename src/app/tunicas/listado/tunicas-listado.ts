@@ -9,7 +9,7 @@ import { MatInputModule } from '@angular/material/input';
 import { PageEvent } from '@angular/material/paginator';
 import { MatSortModule, Sort } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { catchError, debounceTime, distinctUntilChanged, filter, of, switchMap, tap } from 'rxjs';
 
 import { AuthService } from '../../auth/auth.service';
@@ -48,6 +48,7 @@ const MEDIDA_MAXIMA = 250;
 @Component({
   selector: 'app-tunicas-listado',
   imports: [
+    RouterLink,
     MatButtonModule,
     MatChipsModule,
     MatFormFieldModule,

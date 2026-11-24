@@ -1,0 +1,20 @@
+/* Lo común del asistente está en comun/importacion/asistente-importacion.css. */
+
+.aviso-hermano {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid #060830;
+  border-radius: 4px;
+  color: #060830;
+}
+
+.icono-aviso {
+  width: 18px;
+  height: 18px;
+  margin-left: 4px;
+  font-size: 18px;
+  vertical-align: text-bottom;
+  color: rgb(6 8 48 / 70%);
+}
