@@ -25,6 +25,10 @@ import { ConfirmacionService } from '../../comun/confirmacion/confirmacion.servi
 import { guardarFichero } from '../../comun/importacion/importacion-api';
 import { mensajeError } from '../../comun/mensaje-error';
 import {
+  DatosDialogoJornada,
+  DialogoJornadaExtraordinaria,
+} from '../dialogos/dialogo-jornada-extraordinaria';
+import {
   DatosDialogoPeriodo,
   DialogoPeriodoDevolucion,
 } from '../dialogos/dialogo-periodo-devolucion';
@@ -78,6 +82,7 @@ export class RepartoDetalle implements OnInit {
   protected readonly puedeGestionar = this.auth.puede('repartos', 'G');
   protected readonly puedeCambiarPeriodo = this.auth.puede('periodoDevolucion', 'G');
   protected readonly gestionaPlantilla = this.auth.puede('plantillaResguardo', 'G');
+  protected readonly puedeAnadirJornada = this.auth.puede('jornadasExtraordinarias', 'G');
   protected readonly estados = ESTADOS_REPARTO;
   protected readonly sanciones = SANCIONES;
   protected readonly formatoFecha = formatoFecha;
@@ -103,6 +108,11 @@ export class RepartoDetalle implements OnInit {
   });
   protected readonly puedeAbrir = computed(() => this.reparto()?.estado === 'BORRADOR');
   protected readonly puedeCerrar = computed(() => this.reparto()?.estado === 'ABIERTO');
+  /** Las jornadas extraordinarias se añaden mientras el reparto no está cerrado. */
+  protected readonly admiteJornadas = computed(() => {
+    const estado = this.reparto()?.estado;
+    return estado === 'BORRADOR' || estado === 'ABIERTO';
+  });
   /** El periodo ya no se cambia cuando se ha cerrado el plazo de gracia. */
   protected readonly periodoEditable = computed(() => {
     const reparto = this.reparto();
@@ -111,7 +121,8 @@ export class RepartoDetalle implements OnInit {
   protected readonly hayAcciones = computed(
     () =>
       (this.puedeGestionar && (this.puedeAbrir() || this.puedeCerrar())) ||
-      (this.puedeCambiarPeriodo && this.periodoEditable()),
+      (this.puedeCambiarPeriodo && this.periodoEditable()) ||
+      (this.puedeAnadirJornada && this.admiteJornadas()),
   );
 
   ngOnInit(): void {
@@ -227,6 +238,24 @@ export class RepartoDetalle implements OnInit {
         },
         error: (err: unknown) =>
           this.error.set(mensajeError(err, 'No se ha podido cerrar el reparto.')),
+      });
+  }
+
+  protected anadirJornada(): void {
+    const reparto = this.reparto();
+    if (!reparto) {
+      return;
+    }
+    this.dialog
+      .open<DialogoJornadaExtraordinaria, DatosDialogoJornada, Reparto>(
+        DialogoJornadaExtraordinaria,
+        { data: { reparto }, width: '480px', maxWidth: '95vw' },
+      )
+      .afterClosed()
+      .pipe(filter((actualizado): actualizado is Reparto => actualizado !== undefined))
+      .subscribe((actualizado) => {
+        this.reparto.set(actualizado);
+        this.avisos.exito('Jornada extraordinaria añadida');
       });
   }
 

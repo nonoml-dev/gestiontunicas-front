@@ -145,6 +145,11 @@ describe('RepartoDetalle', () => {
     await fixture.whenStable();
   }
 
+  function escribirEn(entrada: HTMLInputElement, valor: string): void {
+    entrada.value = valor;
+    entrada.dispatchEvent(new Event('input'));
+  }
+
   async function accion(nombre: string): Promise<void> {
     (fixture.nativeElement as HTMLElement)
       .querySelector<HTMLButtonElement>('button[aria-label="Acciones"]')!
@@ -374,6 +379,94 @@ describe('RepartoDetalle', () => {
 
     expect(texto()).toContain('recibo-2.docx');
     expect(texto()).not.toContain('Otras plantillas subidas');
+  });
+
+  it('añade una jornada extraordinaria con su limosna y la muestra en la configuración', async () => {
+    await crear(true, reparto({ estado: 'ABIERTO' }));
+
+    await accion('Añadir jornada extraordinaria');
+    expect(textoDialogo()).toContain('Vacío = la del reparto (20,00 €)');
+    const campos = dialogo()!.querySelectorAll<HTMLInputElement>('input');
+    escribirEn(campos[0], '2027-03-15');
+    escribirEn(campos[1], '10:00');
+    escribirEn(campos[2], '13:00');
+    escribirEn(campos[6], '15.5');
+    botonDe(dialogo()!, 'Añadir')!.click();
+    await fixture.whenStable();
+
+    const peticion = http.expectOne(`${URL}/jornadas-extraordinarias`);
+    expect(peticion.request.method).toBe('POST');
+    expect(peticion.request.body).toEqual({
+      fecha: '2027-03-15',
+      horaInicio: '10:00',
+      horaFin: '13:00',
+      limosna: 15.5,
+      permiteRenovacion: true,
+      permiteNuevaAlta: true,
+      permiteCambio: true,
+    });
+    const conJornada = reparto({ estado: 'ABIERTO' });
+    conJornada.jornadas.push({
+      id: 9,
+      numero: 4,
+      extraordinaria: true,
+      fecha: '2027-03-15',
+      horaInicio: '10:00:00',
+      horaFin: '13:00:00',
+      limosna: 15.5,
+      permiteRenovacion: true,
+      permiteNuevaAlta: true,
+      permiteCambio: true,
+    });
+    peticion.flush(conJornada);
+    await fixture.whenStable();
+
+    expect(texto()).toContain('Extraordinaria · 15/03/2027 · 10:00–13:00');
+    expect(texto()).toContain('15,50 €');
+  });
+
+  it('sin limosna envía nula, y no deja un día ocupado ni sin operaciones', async () => {
+    await crear(true, reparto());
+
+    await accion('Añadir jornada extraordinaria');
+    const campos = dialogo()!.querySelectorAll<HTMLInputElement>('input');
+    escribirEn(campos[0], '2027-03-08');
+    dialogo()!
+      .querySelectorAll<HTMLInputElement>('input[type=checkbox]')
+      .forEach((casilla) => casilla.click());
+    await fixture.whenStable();
+    botonDe(dialogo()!, 'Añadir')!.click();
+    await fixture.whenStable();
+
+    http.expectNone(`${URL}/jornadas-extraordinarias`);
+    expect(textoDialogo()).toContain('Ese día ya tiene jornada');
+    expect(textoDialogo()).toContain('Marca al menos una operación.');
+
+    escribirEn(campos[0], '2027-03-16');
+    dialogo()!.querySelector<HTMLInputElement>('input[type=checkbox]')!.click();
+    await fixture.whenStable();
+    botonDe(dialogo()!, 'Añadir')!.click();
+    await fixture.whenStable();
+
+    const peticion = http.expectOne(`${URL}/jornadas-extraordinarias`);
+    expect(peticion.request.body).toMatchObject({
+      fecha: '2027-03-16',
+      horaInicio: null,
+      horaFin: null,
+      limosna: null,
+      permiteRenovacion: true,
+      permiteNuevaAlta: false,
+      permiteCambio: false,
+    });
+    peticion.flush(reparto());
+  });
+
+  it('un reparto cerrado no admite jornadas extraordinarias', async () => {
+    await crear(true, reparto({ estado: 'CERRADO', finGraciaProcesadoEn: '2027-07-01T00:00:00Z' }));
+
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelector('button[aria-label="Acciones"]'),
+    ).toBeNull();
   });
 
   it('quien solo consulta ve el reparto y su historial, sin acciones ni plantilla', async () => {

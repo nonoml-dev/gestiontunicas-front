@@ -34,6 +34,12 @@
             <span>Abrir reparto</span>
           </button>
         }
+        @if (puedeAnadirJornada && admiteJornadas()) {
+          <button mat-menu-item type="button" (click)="anadirJornada()">
+            <mat-icon>event_available</mat-icon>
+            <span>Añadir jornada extraordinaria</span>
+          </button>
+        }
         @if (puedeCambiarPeriodo && periodoEditable()) {
           <button mat-menu-item type="button" (click)="cambiarPeriodo()">
             <mat-icon>event_repeat</mat-icon>
