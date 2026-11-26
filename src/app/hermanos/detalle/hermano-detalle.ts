@@ -3,6 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -13,6 +14,8 @@ import { Observable, finalize, switchMap } from 'rxjs';
 import { AuthService } from '../../auth/auth.service';
 import { AvisosService } from '../../comun/avisos/avisos.service';
 import { ConfirmacionService } from '../../comun/confirmacion/confirmacion.service';
+import { aFechaIso, deFechaIso } from '../../comun/fechas-material';
+import { CALENDARIO_ESPANOL } from '../../comun/calendario-espanol';
 import { mensajeError } from '../../comun/mensaje-error';
 import { ContactoHermanoRequest, Hermano, HermanoRequest } from '../hermano.models';
 import { HermanosService } from '../hermanos.service';
@@ -33,6 +36,7 @@ const CAMPOS_DEL_HERMANO = ['numeroHermano', 'apellidos', 'nombre', 'fechaNacimi
     RouterLink,
     MatButtonModule,
     MatCardModule,
+    MatDatepickerModule,
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
@@ -41,6 +45,7 @@ const CAMPOS_DEL_HERMANO = ['numeroHermano', 'apellidos', 'nombre', 'fechaNacimi
   templateUrl: './hermano-detalle.html',
   styleUrl: './hermano-detalle.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [CALENDARIO_ESPANOL],
 })
 export class HermanoDetalle {
   private readonly fb = inject(NonNullableFormBuilder);
@@ -53,7 +58,7 @@ export class HermanoDetalle {
   readonly id = input<string>();
 
   protected readonly puedeGestionar = inject(AuthService).puede('hermanos', 'G');
-  protected readonly hoy = new Date().toISOString().slice(0, 10);
+  protected readonly hoy = new Date();
 
   protected readonly hermano = signal<Hermano | null>(null);
   protected readonly cargando = signal(false);
@@ -64,7 +69,7 @@ export class HermanoDetalle {
     numeroHermano: ['', Validators.maxLength(10)],
     apellidos: ['', [Validators.required, Validators.maxLength(150)]],
     nombre: ['', [Validators.required, Validators.maxLength(100)]],
-    fechaNacimiento: [''],
+    fechaNacimiento: this.fb.control<Date | null>(null),
     telefono1: ['', [Validators.maxLength(20), Validators.pattern(PATRON_TELEFONO)]],
     telefono2: ['', [Validators.maxLength(20), Validators.pattern(PATRON_TELEFONO)]],
     email: ['', [Validators.email, Validators.maxLength(150)]],
@@ -150,7 +155,7 @@ export class HermanoDetalle {
       numeroHermano: hermano.numeroHermano ?? '',
       apellidos: hermano.apellidos,
       nombre: hermano.nombre,
-      fechaNacimiento: hermano.fechaNacimiento ?? '',
+      fechaNacimiento: deFechaIso(hermano.fechaNacimiento),
       telefono1: hermano.telefono1 ?? '',
       telefono2: hermano.telefono2 ?? '',
       email: hermano.email ?? '',
@@ -169,7 +174,7 @@ export class HermanoDetalle {
       numeroHermano: texto(valor.numeroHermano),
       apellidos: valor.apellidos.trim(),
       nombre: valor.nombre.trim(),
-      fechaNacimiento: texto(valor.fechaNacimiento),
+      fechaNacimiento: aFechaIso(valor.fechaNacimiento),
       telefono1: texto(valor.telefono1),
       telefono2: texto(valor.telefono2),
       email: texto(valor.email),

@@ -1,9 +1,11 @@
-<a mat-button routerLink="/hermanos" class="volver">
-  <mat-icon>arrow_back</mat-icon>
-  Volver al listado
-</a>
+@if (!incrustado()) {
+  <a mat-button routerLink="/hermanos" class="volver">
+    <mat-icon>arrow_back</mat-icon>
+    Volver al listado
+  </a>
 
-<h2 class="titulo">Importar Excel de hermanos</h2>
+  <h2 class="titulo">Importar Excel de hermanos</h2>
+}
 
 <mat-card appearance="outlined" class="tarjeta">
   @if (ocupado()) {
@@ -163,7 +165,9 @@
         <div class="terminada">
           <mat-icon class="icono-ok">check_circle</mat-icon>
           <p>Importación terminada.</p>
-          <a mat-flat-button routerLink="/hermanos">Ir al listado de hermanos</a>
+          @if (!incrustado()) {
+            <a mat-flat-button routerLink="/hermanos">Ir al listado de hermanos</a>
+          }
         </div>
       } @else {
         <ul class="resumen">

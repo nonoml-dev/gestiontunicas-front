@@ -5,6 +5,7 @@ import { MATERIAL_ANIMATIONS } from '@angular/material/core';
 import { Router, provideRouter } from '@angular/router';
 
 import { AuthService } from '../auth/auth.service';
+import { provideFechasEspanol } from '../comun/fechas-material';
 import { RepartosListado } from './listado/repartos-listado';
 import { NuevoReparto } from './nuevo/nuevo-reparto';
 import { Reparto, RepartoRequest, calcularJuevesSanto } from './reparto.models';
@@ -99,6 +100,7 @@ function configurar(componente: unknown, puede = true): void {
       provideHttpClientTesting(),
       { provide: MATERIAL_ANIMATIONS, useValue: { animationsDisabled: true } },
       { provide: AuthService, useValue: { puede: () => puede } },
+      provideFechasEspanol(),
     ],
   });
 }
@@ -157,12 +159,13 @@ describe('NuevoReparto', () => {
   let http: HttpTestingController;
   const elemento = () => fixture.nativeElement as HTMLElement;
   const texto = () => elemento().textContent?.replace(/\s+/g, ' ') ?? '';
-  const pasoActivo = () =>
-    [...elemento().querySelectorAll<HTMLElement>('.mat-vertical-stepper-content')].find(
-      (p) => p.getAttribute('aria-expanded') === 'true' || !p.hasAttribute('inert'),
-    )!;
+  /** Botones del asistente del reparto, sin los de la importación del censo que lleva dentro. */
   const botones = (nombre: string) =>
     [...elemento().querySelectorAll<HTMLButtonElement>('button')].filter(
+      (b) => b.textContent?.trim() === nombre && !b.closest('app-importar-hermanos'),
+    );
+  const botonesCenso = (nombre: string) =>
+    [...elemento().querySelectorAll<HTMLButtonElement>('app-importar-hermanos button')].filter(
       (b) => b.textContent?.trim() === nombre,
     );
 
@@ -179,6 +182,11 @@ describe('NuevoReparto', () => {
 
   async function siguiente(paso: number): Promise<void> {
     botones('Siguiente')[paso].click();
+    await fixture.whenStable();
+  }
+
+  async function saltarCenso(): Promise<void> {
+    botones('Seguir sin cargarlo')[0].click();
     await fixture.whenStable();
   }
 
@@ -204,6 +212,7 @@ describe('NuevoReparto', () => {
     escribir('Hasta', '21:00', 0);
     await siguiente(1);
 
+    await saltarCenso();
     await siguiente(2);
 
     escribir('Limosna del alquiler', '20');
@@ -271,7 +280,9 @@ describe('NuevoReparto', () => {
 
     elemento().querySelectorAll<HTMLInputElement>('input[type=checkbox]')[0].click();
     await fixture.whenStable();
-    expect(fixture.componentInstance['general'].controls.fechaJuevesSanto.value).toBe('2027-03-25');
+    expect(fixture.componentInstance['general'].controls.fechaJuevesSanto.value).toEqual(
+      new Date(2027, 2, 25),
+    );
 
     escribir('Jueves Santo', '2026-03-25');
     await fixture.whenStable();
@@ -377,6 +388,89 @@ describe('NuevoReparto', () => {
     await fixture.whenStable();
 
     expect(navegar).toHaveBeenCalledWith(['/repartos', 2027]);
+  });
+
+  it('carga el censo desde el asistente reutilizando la importación de hermanos', async () => {
+    await crear([]);
+    await siguiente(0);
+    escribir('Fecha', '2027-03-08', 0);
+    escribir('Fecha', '2027-03-09', 1);
+    escribir('Fecha', '2027-03-10', 2);
+    await siguiente(1);
+
+    expect(texto()).toContain('Si el censo ya está cargado, sigue sin subirlo.');
+    expect(texto()).toContain('Censo de hermanosOpcional');
+    expect(texto()).not.toContain('Optional');
+    expect(texto()).not.toContain('Volver al listado');
+    const entrada = elemento().querySelector<HTMLInputElement>(
+      'app-importar-hermanos input[type=file]',
+    )!;
+    Object.defineProperty(entrada, 'files', {
+      value: [new File(['x'], 'censo.xlsx')],
+      configurable: true,
+    });
+    entrada.dispatchEvent(new Event('change'));
+    await fixture.whenStable();
+
+    const URL_IMPORTACION = '/api/v1/hermanos/importaciones';
+    http.expectOne(URL_IMPORTACION).flush({
+      id: 5,
+      nombreFichero: 'censo.xlsx',
+      estado: 'PREVISUALIZADA',
+      totalFilas: 2,
+      filasOk: 2,
+      filasError: 0,
+      filasDuplicadas: 0,
+    });
+    const fila = (id: number) => ({
+      id,
+      numFila: id + 1,
+      datos: {
+        nombreOriginal: 'X',
+        apellidos: 'Apellidos',
+        nombre: 'Nombre',
+        numeroHermano: String(id),
+        fechaNacimiento: '2015-01-01',
+      },
+      estado: 'OK',
+      errores: [],
+      hermanoCoincidente: null,
+      decision: 'CREAR',
+    });
+    http.expectOne(`${URL_IMPORTACION}/5/filas`).flush([fila(1), fila(2)]);
+    await fixture.whenStable();
+
+    botonesCenso('Siguiente')[0].click();
+    await fixture.whenStable();
+    botonesCenso('Importar')[0].click();
+    http.expectOne(`${URL_IMPORTACION}/5/confirmar`).flush({ id: 5, estado: 'CONFIRMADA' });
+    await fixture.whenStable();
+
+    expect(texto()).toContain('Importación terminada.');
+    expect(texto()).not.toContain('Ir al listado de hermanos');
+    expect(botones('Seguir sin cargarlo')).toHaveLength(0);
+
+    // El paso del censo ya dice "Siguiente": el siguiente botón de ese texto es el suyo
+    botones('Siguiente')[2].click();
+    await fixture.whenStable();
+    await siguiente(3);
+    const importes = fixture.componentInstance['importes'];
+    for (const campo of Object.keys(importes.controls) as (keyof typeof importes.controls)[]) {
+      importes.controls[campo].setValue(10);
+    }
+    await siguiente(4);
+    escribir('Devolución desde', '2027-04-05');
+    escribir('Devolución hasta', '2027-04-30');
+    await siguiente(5);
+
+    expect(texto()).toContain('Cargado: 2 hermanos nuevos y 0 actualizados');
+  });
+
+  it('sin cargar el censo el resumen lo dice', async () => {
+    await crear([]);
+    await rellenarHastaElResumen();
+
+    expect(texto()).toContain('No se ha cargado en este asistente');
   });
 
   it('muestra el error del servidor si no se puede crear', async () => {

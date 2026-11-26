@@ -33,7 +33,20 @@
 
         <mat-form-field appearance="outline">
           <mat-label>Fecha de nacimiento</mat-label>
-          <input matInput type="date" formControlName="fechaNacimiento" [max]="hoy" />
+          <input
+            matInput
+            [matDatepicker]="selectorNacimiento"
+            formControlName="fechaNacimiento"
+            [max]="hoy"
+            placeholder="dd/mm/aaaa"
+          />
+          <mat-datepicker-toggle matIconSuffix [for]="selectorNacimiento" />
+          <mat-datepicker #selectorNacimiento startView="multi-year" />
+          @if (form.controls.fechaNacimiento.hasError('matDatepickerParse')) {
+            <mat-error>Fecha no válida (dd/mm/aaaa)</mat-error>
+          } @else if (form.controls.fechaNacimiento.hasError('matDatepickerMax')) {
+            <mat-error>No puede ser posterior a hoy</mat-error>
+          }
           @if (!hermano()) {
             <mat-hint>Sin ella no puede alquilar túnica</mat-hint>
           }

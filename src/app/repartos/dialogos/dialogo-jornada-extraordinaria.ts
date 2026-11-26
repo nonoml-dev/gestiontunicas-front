@@ -9,11 +9,15 @@ import {
 } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatTimepickerModule } from '@angular/material/timepicker';
 import { finalize } from 'rxjs';
 
+import { aFechaIso, aHora, minutosDelDia } from '../../comun/fechas-material';
+import { CALENDARIO_ESPANOL } from '../../comun/calendario-espanol';
 import { mensajeError } from '../../comun/mensaje-error';
 import { Reparto, formatoEuros } from '../reparto.models';
 import { RepartosService } from '../repartos.service';
@@ -28,7 +32,9 @@ const validarJornada = (grupo: AbstractControl): ValidationErrors | null => {
   const { horaInicio, horaFin, permiteRenovacion, permiteNuevaAlta, permiteCambio } =
     grupo.getRawValue();
   const errores: ValidationErrors = {};
-  if (horaInicio && horaFin && horaFin < horaInicio) {
+  const inicio = minutosDelDia(horaInicio);
+  const fin = minutosDelDia(horaFin);
+  if (inicio !== null && fin !== null && fin < inicio) {
     errores['horario'] = true;
   }
   if (!permiteRenovacion && !permiteNuevaAlta && !permiteCambio) {
@@ -47,9 +53,11 @@ const validarJornada = (grupo: AbstractControl): ValidationErrors | null => {
     ReactiveFormsModule,
     MatButtonModule,
     MatCheckboxModule,
+    MatDatepickerModule,
     MatDialogModule,
     MatFormFieldModule,
     MatInputModule,
+    MatTimepickerModule,
   ],
   template: `
     <h2 mat-dialog-title class="titulo">Añadir jornada extraordinaria</h2>
@@ -57,8 +65,18 @@ const validarJornada = (grupo: AbstractControl): ValidationErrors | null => {
       <mat-dialog-content class="campos">
         <mat-form-field appearance="outline">
           <mat-label>Fecha</mat-label>
-          <input matInput type="date" formControlName="fecha" required />
-          @if (form.controls.fecha.hasError('ocupada')) {
+          <input
+            matInput
+            [matDatepicker]="selectorFecha"
+            formControlName="fecha"
+            placeholder="dd/mm/aaaa"
+            required
+          />
+          <mat-datepicker-toggle matIconSuffix [for]="selectorFecha" />
+          <mat-datepicker #selectorFecha />
+          @if (form.controls.fecha.hasError('matDatepickerParse')) {
+            <mat-error>Fecha no válida (dd/mm/aaaa)</mat-error>
+          } @else if (form.controls.fecha.hasError('ocupada')) {
             <mat-error>Ese día ya tiene jornada</mat-error>
           } @else if (form.controls.fecha.invalid) {
             <mat-error>Indica la fecha</mat-error>
@@ -67,11 +85,21 @@ const validarJornada = (grupo: AbstractControl): ValidationErrors | null => {
         <div class="fila">
           <mat-form-field appearance="outline">
             <mat-label>Desde</mat-label>
-            <input matInput type="time" formControlName="horaInicio" />
+            <input matInput [matTimepicker]="selectorDesde" formControlName="horaInicio" />
+            <mat-timepicker-toggle matIconSuffix [for]="selectorDesde" />
+            <mat-timepicker #selectorDesde interval="15m" />
+            @if (form.controls.horaInicio.invalid) {
+              <mat-error>Hora no válida</mat-error>
+            }
           </mat-form-field>
           <mat-form-field appearance="outline">
             <mat-label>Hasta</mat-label>
-            <input matInput type="time" formControlName="horaFin" />
+            <input matInput [matTimepicker]="selectorHasta" formControlName="horaFin" />
+            <mat-timepicker-toggle matIconSuffix [for]="selectorHasta" />
+            <mat-timepicker #selectorHasta interval="15m" />
+            @if (form.controls.horaFin.invalid) {
+              <mat-error>Hora no válida</mat-error>
+            }
           </mat-form-field>
         </div>
         @if (form.hasError('horario')) {
@@ -113,6 +141,7 @@ const validarJornada = (grupo: AbstractControl): ValidationErrors | null => {
   `,
   styleUrl: './dialogos-reparto.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [CALENDARIO_ESPANOL],
 })
 export class DialogoJornadaExtraordinaria {
   private readonly fb = inject(NonNullableFormBuilder);
@@ -128,16 +157,13 @@ export class DialogoJornadaExtraordinaria {
 
   protected readonly form = this.fb.group(
     {
-      fecha: [
-        '',
-        [
-          Validators.required,
-          (control: AbstractControl) =>
-            this.fechasOcupadas.has(control.value) ? { ocupada: true } : null,
-        ],
-      ],
-      horaInicio: '',
-      horaFin: '',
+      fecha: this.fb.control<Date | null>(null, [
+        Validators.required,
+        (control: AbstractControl) =>
+          this.fechasOcupadas.has(aFechaIso(control.value) ?? '') ? { ocupada: true } : null,
+      ]),
+      horaInicio: this.fb.control<Date | null>(null),
+      horaFin: this.fb.control<Date | null>(null),
       permiteRenovacion: true,
       permiteNuevaAlta: true,
       permiteCambio: true,
@@ -163,9 +189,9 @@ export class DialogoJornadaExtraordinaria {
     this.enviando.set(true);
     this.repartos
       .anadirJornadaExtraordinaria(this.reparto.id, {
-        fecha: valor.fecha,
-        horaInicio: valor.horaInicio || null,
-        horaFin: valor.horaFin || null,
+        fecha: aFechaIso(valor.fecha)!,
+        horaInicio: aHora(valor.horaInicio),
+        horaFin: aHora(valor.horaFin),
         limosna: valor.limosna === null || (valor.limosna as unknown) === '' ? null : valor.limosna,
         permiteRenovacion: valor.permiteRenovacion,
         permiteNuevaAlta: valor.permiteNuevaAlta,

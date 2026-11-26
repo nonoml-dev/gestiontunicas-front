@@ -7,11 +7,14 @@ import {
   Validators,
 } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { finalize } from 'rxjs';
 
+import { aFechaIso, deFechaIso, esAnterior } from '../../comun/fechas-material';
+import { CALENDARIO_ESPANOL } from '../../comun/calendario-espanol';
 import { mensajeError } from '../../comun/mensaje-error';
 import { Reparto } from '../reparto.models';
 import { RepartosService } from '../repartos.service';
@@ -26,7 +29,7 @@ const LONGITUD_MOTIVO = 255;
 
 const periodoCoherente = (grupo: AbstractControl): ValidationErrors | null => {
   const { inicio, fin } = grupo.getRawValue();
-  return inicio && fin && fin < inicio ? { periodo: true } : null;
+  return esAnterior(fin, inicio) ? { periodo: true } : null;
 };
 
 /**
@@ -38,6 +41,7 @@ const periodoCoherente = (grupo: AbstractControl): ValidationErrors | null => {
   imports: [
     ReactiveFormsModule,
     MatButtonModule,
+    MatDatepickerModule,
     MatDialogModule,
     MatFormFieldModule,
     MatInputModule,
@@ -49,15 +53,35 @@ const periodoCoherente = (grupo: AbstractControl): ValidationErrors | null => {
         <div class="fila">
           <mat-form-field appearance="outline">
             <mat-label>Devolución desde</mat-label>
-            <input matInput type="date" formControlName="inicio" required />
-            @if (form.controls.inicio.invalid) {
+            <input
+              matInput
+              [matDatepicker]="selectorInicio"
+              formControlName="inicio"
+              placeholder="dd/mm/aaaa"
+              required
+            />
+            <mat-datepicker-toggle matIconSuffix [for]="selectorInicio" />
+            <mat-datepicker #selectorInicio />
+            @if (form.controls.inicio.hasError('matDatepickerParse')) {
+              <mat-error>Fecha no válida (dd/mm/aaaa)</mat-error>
+            } @else if (form.controls.inicio.invalid) {
               <mat-error>Indica la fecha</mat-error>
             }
           </mat-form-field>
           <mat-form-field appearance="outline">
             <mat-label>Devolución hasta</mat-label>
-            <input matInput type="date" formControlName="fin" required />
-            @if (form.controls.fin.invalid) {
+            <input
+              matInput
+              [matDatepicker]="selectorFin"
+              formControlName="fin"
+              placeholder="dd/mm/aaaa"
+              required
+            />
+            <mat-datepicker-toggle matIconSuffix [for]="selectorFin" />
+            <mat-datepicker #selectorFin />
+            @if (form.controls.fin.hasError('matDatepickerParse')) {
+              <mat-error>Fecha no válida (dd/mm/aaaa)</mat-error>
+            } @else if (form.controls.fin.invalid) {
               <mat-error>Indica la fecha</mat-error>
             }
           </mat-form-field>
@@ -107,6 +131,7 @@ const periodoCoherente = (grupo: AbstractControl): ValidationErrors | null => {
   `,
   styleUrl: './dialogos-reparto.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [CALENDARIO_ESPANOL],
 })
 export class DialogoPeriodoDevolucion {
   private readonly fb = inject(NonNullableFormBuilder);
@@ -122,8 +147,14 @@ export class DialogoPeriodoDevolucion {
 
   protected readonly form = this.fb.group(
     {
-      inicio: [this.reparto.periodoDevolucion.inicio, Validators.required],
-      fin: [this.reparto.periodoDevolucion.fin, Validators.required],
+      inicio: this.fb.control<Date | null>(
+        deFechaIso(this.reparto.periodoDevolucion.inicio),
+        Validators.required,
+      ),
+      fin: this.fb.control<Date | null>(
+        deFechaIso(this.reparto.periodoDevolucion.fin),
+        Validators.required,
+      ),
       plazoGraciaMeses: this.fb.control<number | null>(
         this.reparto.periodoDevolucion.plazoGraciaMeses,
         [
@@ -155,8 +186,8 @@ export class DialogoPeriodoDevolucion {
     this.repartos
       .cambiarPeriodoDevolucion(this.reparto.id, {
         periodo: {
-          inicio: valor.inicio,
-          fin: valor.fin,
+          inicio: aFechaIso(valor.inicio)!,
+          fin: aFechaIso(valor.fin)!,
           plazoGraciaMeses: valor.plazoGraciaMeses!,
         },
         motivo: valor.motivo.trim(),

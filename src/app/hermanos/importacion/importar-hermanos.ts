@@ -1,5 +1,14 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, signal, viewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+  output,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
@@ -16,7 +25,18 @@ import { mensajeError } from '../../comun/mensaje-error';
 import { DecisionFila, Importacion, ImportacionFila } from './importacion.models';
 import { ImportacionService } from './importacion.service';
 
-/** Asistente "Importar Excel" de hermanos (DESIGN.md §7.6): subir → revisar → confirmar. */
+/** Cifras de una importación de hermanos confirmada. */
+export interface ResumenImportacionHermanos {
+  crear: number;
+  actualizar: number;
+  ignorar: number;
+  errores: number;
+}
+
+/**
+ * Asistente "Importar Excel" de hermanos (DESIGN.md §7.6): subir → revisar → confirmar. También va
+ * incrustado como paso "Censo de hermanos" del asistente "Nuevo reparto" (REP-07).
+ */
 @Component({
   selector: 'app-importar-hermanos',
   imports: [
@@ -38,6 +58,11 @@ import { ImportacionService } from './importacion.service';
 export class ImportarHermanos {
   private readonly importacionService = inject(ImportacionService);
   private readonly stepper = viewChild.required(MatStepper);
+
+  /** Dentro de otro asistente: sin "Volver", sin título y sin ir al listado al terminar. */
+  readonly incrustado = input(false);
+  /** Se emite al confirmar la importación. */
+  readonly terminado = output<ResumenImportacionHermanos>();
 
   protected readonly columnasCorrectas = ['fila', 'numero', 'apellidos', 'nombre', 'fecha', 'accion'];
   protected readonly columnasErrores = ['fila', 'contenido', 'motivo'];
@@ -176,6 +201,7 @@ export class ImportarHermanos {
         next: (confirmada) => {
           this.importacion.set(confirmada);
           this.terminada.set(true);
+          this.terminado.emit(this.resumen());
         },
         error: (err: unknown) => this.error.set(mensajeError(err, 'No se ha podido importar.')),
       });
