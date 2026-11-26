@@ -21,7 +21,8 @@ const MATRIZ = {
   jornadasExtraordinarias: fila('G', 'G', 'C', '-', '-'),
   periodoDevolucion: fila('G', 'G', '-', '-', '-'),
   noDevueltas: fila('G', 'G', 'G', '-', '-'),
-  importes: fila('G', 'C', 'G', 'C', '-'),
+  /** La limosna y los importes A–F se fijan en el reparto: los gestiona el Prioste (26/11/2026). */
+  importes: fila('G', 'G', 'C', 'C', '-'),
   entregas: fila('G', 'G', '-', 'G', 'G'),
   resguardo: fila('G', 'G', 'C', 'G', 'G'),
   plantillaResguardo: fila('G', 'G', '-', '-', '-'),

@@ -1,0 +1,112 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  min-height: 40px;
+}
+
+.progreso {
+  --mat-progress-bar-active-indicator-color: #ba9b57;
+  --mat-progress-bar-track-height: 2px;
+  --mat-progress-bar-active-indicator-height: 2px;
+}
+
+.tarjetas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.reparto {
+  padding: 16px;
+}
+
+.cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.anio {
+  margin: 0;
+  font:
+    600 22px 'Cormorant Garamond',
+    serif;
+  color: #060830;
+}
+
+.estado {
+  padding: 2px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.estado.borrador {
+  border: 1px solid rgb(6 8 48 / 38%);
+  color: #060830;
+}
+
+.estado.abierto {
+  background: #ba9b57;
+  color: #060830;
+}
+
+.estado.cerrado {
+  background: rgb(6 8 48 / 8%);
+  color: rgb(6 8 48 / 60%);
+}
+
+.datos {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 4px 16px;
+  margin: 12px 0 0;
+}
+
+.datos dt {
+  color: rgb(6 8 48 / 60%);
+}
+
+.datos dd {
+  margin: 0;
+  color: #060830;
+  font-variant-numeric: tabular-nums;
+}
+
+.vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 40px 16px;
+  color: rgb(6 8 48 / 60%);
+}
+
+.vacio mat-icon {
+  width: 40px;
+  height: 40px;
+  font-size: 40px;
+  color: #ba9b57;
+}
+
+.vacio p {
+  margin: 0;
+}
+
+.nota {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: rgb(6 8 48 / 60%);
+}
+
+.nota.error {
+  color: var(--mat-sys-error);
+}
