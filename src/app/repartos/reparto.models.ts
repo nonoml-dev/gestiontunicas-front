@@ -170,3 +170,40 @@ export function formatoEuros(importe: number | null | undefined): string {
   }
   return `${importe.toFixed(2).replace('.', ',')} €`;
 }
+
+export interface CambioPeriodoDevolucion {
+  id: number;
+  anterior: PeriodoDevolucion;
+  nuevo: PeriodoDevolucion;
+  motivo: string;
+  usuario: string;
+  fecha: string;
+}
+
+export interface CambioPeriodoDevolucionRequest {
+  periodo: { inicio: string; fin: string; plazoGraciaMeses: number };
+  motivo: string;
+}
+
+export interface PlantillaResguardo {
+  id: number;
+  nombre: string;
+  nombreFichero: string;
+  variablesDetectadas: string[];
+  /** No están en el catálogo o tienen las llaves mal escritas. */
+  variablesDesconocidas: string[];
+  subidoPor: string;
+  subidoEn: string;
+}
+
+export interface Reserva {
+  id: number;
+  repartoId: number;
+  hermanoId: number;
+  hermanoNombreCompleto: string;
+  tunicaId: number;
+  tunicaCodigo: string;
+  estado: 'ACTIVA' | 'RECOGIDA' | 'LIBERADA';
+  alquilerId: number | null;
+  resueltaEn: string | null;
+}

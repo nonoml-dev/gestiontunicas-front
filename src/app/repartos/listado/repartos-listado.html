@@ -21,7 +21,9 @@
     @for (reparto of repartos(); track reparto.id) {
       <mat-card appearance="outlined" class="reparto">
         <div class="cabecera">
-          <h3 class="anio">Reparto {{ reparto.anio }}</h3>
+          <h3 class="anio">
+            <a [routerLink]="['/repartos', reparto.id]">Reparto {{ reparto.anio }}</a>
+          </h3>
           <span [class]="'estado ' + reparto.estado.toLowerCase()">{{
             estados[reparto.estado]
           }}</span>

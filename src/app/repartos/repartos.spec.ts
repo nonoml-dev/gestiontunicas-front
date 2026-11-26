@@ -376,7 +376,7 @@ describe('NuevoReparto', () => {
     peticion.flush(reparto(2027));
     await fixture.whenStable();
 
-    expect(navegar).toHaveBeenCalledWith(['/repartos']);
+    expect(navegar).toHaveBeenCalledWith(['/repartos', 2027]);
   });
 
   it('muestra el error del servidor si no se puede crear', async () => {
