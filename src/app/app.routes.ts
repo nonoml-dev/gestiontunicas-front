@@ -73,6 +73,27 @@ export const routes: Routes = [
         loadComponent: () => import('./tunicas/ficha/tunica-ficha').then((m) => m.TunicaFicha),
       },
       {
+        path: 'repartos',
+        title: 'Repartos · Hermandad de la Quinta Angustia',
+        data: { titulo: 'Repartos' },
+        canActivate: [permisoGuard('repartos', 'C', '/inicio')],
+        loadComponent: () => import('./repartos/listado/repartos-listado').then((m) => m.RepartosListado),
+      },
+      {
+        path: 'repartos/nuevo',
+        title: 'Nuevo reparto · Hermandad de la Quinta Angustia',
+        data: { titulo: 'Repartos' },
+        canActivate: [permisoGuard('repartos', 'G', '/repartos')],
+        loadComponent: () => import('./repartos/nuevo/nuevo-reparto').then((m) => m.NuevoReparto),
+      },
+      {
+        path: 'repartos/:id',
+        title: 'Reparto · Hermandad de la Quinta Angustia',
+        data: { titulo: 'Repartos' },
+        canActivate: [permisoGuard('repartos', 'C', '/inicio')],
+        loadComponent: () => import('./repartos/detalle/reparto-detalle').then((m) => m.RepartoDetalle),
+      },
+      {
         path: 'administracion/usuarios',
         title: 'Usuarios · Hermandad de la Quinta Angustia',
         data: { titulo: 'Usuarios' },

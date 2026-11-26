@@ -1,0 +1,141 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.volver {
+  align-self: flex-start;
+}
+
+.titulo {
+  margin: 0;
+  font:
+    600 24px 'Cormorant Garamond',
+    serif;
+  color: #060830;
+}
+
+.subtitulo {
+  margin: 8px 0 0;
+  font:
+    600 18px 'Cormorant Garamond',
+    serif;
+  color: #060830;
+}
+
+.tarjeta {
+  position: relative;
+  overflow: hidden;
+  padding-bottom: 8px;
+}
+
+.progreso {
+  position: absolute;
+  inset: 0 0 auto;
+  --mat-progress-bar-active-indicator-color: #ba9b57;
+  --mat-progress-bar-track-height: 2px;
+  --mat-progress-bar-active-indicator-height: 2px;
+}
+
+mat-stepper {
+  background: transparent;
+}
+
+.campos {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 720px;
+  padding-top: 8px;
+}
+
+/* La tabla de la importación necesita todo el ancho. */
+.campos.censo {
+  max-width: none;
+}
+
+.fila {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}
+
+.corto {
+  width: 220px;
+}
+
+.hora {
+  width: 170px;
+}
+
+.importes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 0 16px;
+}
+
+.jornada {
+  margin: 0;
+  padding: 8px 16px;
+  border: 1px solid rgb(6 8 48 / 12%);
+  border-radius: 8px;
+}
+
+.jornada legend {
+  padding: 0 4px;
+  font-weight: 600;
+  color: #060830;
+}
+
+.operaciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 16px;
+}
+
+.dato {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: #060830;
+}
+
+.dato mat-icon {
+  color: #ba9b57;
+}
+
+.nota {
+  margin: 0;
+  font-size: 12px;
+  color: rgb(6 8 48 / 60%);
+}
+
+.nota.error {
+  color: var(--mat-sys-error);
+}
+
+.botones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.resumen {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 8px 24px;
+  margin: 8px 0 16px;
+}
+
+.resumen dt {
+  color: rgb(6 8 48 / 60%);
+}
+
+.resumen dd {
+  margin: 0;
+  color: #060830;
+  font-variant-numeric: tabular-nums;
+}

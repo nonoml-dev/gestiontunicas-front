@@ -1,0 +1,455 @@
+<a mat-button routerLink="/repartos" class="volver">
+  <mat-icon>arrow_back</mat-icon>
+  Volver a repartos
+</a>
+
+<h2 class="titulo">Nuevo reparto</h2>
+
+<mat-card appearance="outlined" class="tarjeta">
+  @if (cargando() || enviando()) {
+    <mat-progress-bar mode="indeterminate" class="progreso" />
+  }
+
+  <mat-stepper
+    orientation="vertical"
+    linear
+    [disableRipple]="true"
+    (selectionChange)="$event.selectedIndex === pasoResumen && prepararResumen()"
+  >
+    <!-- Paso 1 -->
+    <mat-step label="Año y Jueves Santo" [stepControl]="general">
+      <form [formGroup]="general" class="campos" novalidate>
+        <mat-form-field appearance="outline" class="corto">
+          <mat-label>Año</mat-label>
+          <input
+            matInput
+            type="number"
+            inputmode="numeric"
+            formControlName="anio"
+            required
+            [min]="limites.anioMinimo"
+            [max]="limites.anioMaximo"
+          />
+          @if (general.controls.anio.hasError('repetido')) {
+            <mat-error>Ya existe el reparto de este año</mat-error>
+          } @else if (general.controls.anio.invalid) {
+            <mat-error>Año entre {{ limites.anioMinimo }} y {{ limites.anioMaximo }}</mat-error>
+          }
+        </mat-form-field>
+
+        @if (!general.controls.juevesSantoManual.value) {
+          <p class="dato">
+            <mat-icon>event</mat-icon>
+            @if (juevesSantoCalculado(); as fecha) {
+              Jueves Santo: <strong>{{ formatoFecha(fecha) }}</strong>
+            } @else {
+              Escribe el año para calcular el Jueves Santo
+            }
+          </p>
+          <p class="nota">Se calcula a partir del Domingo de Resurrección.</p>
+        }
+
+        <mat-checkbox formControlName="juevesSantoManual">Fijar manualmente</mat-checkbox>
+
+        @if (general.controls.juevesSantoManual.value) {
+          <mat-form-field appearance="outline" class="corto">
+            <mat-label>Jueves Santo</mat-label>
+            <input
+              matInput
+              [matDatepicker]="selectorJuevesSanto"
+              formControlName="fechaJuevesSanto"
+              placeholder="dd/mm/aaaa"
+              required
+            />
+            <mat-datepicker-toggle matIconSuffix [for]="selectorJuevesSanto" />
+            <mat-datepicker #selectorJuevesSanto />
+            @if (general.controls.fechaJuevesSanto.hasError('matDatepickerParse')) {
+              <mat-error>Fecha no válida (dd/mm/aaaa)</mat-error>
+            } @else if (general.controls.fechaJuevesSanto.invalid) {
+              <mat-error>Indica la fecha</mat-error>
+            }
+          </mat-form-field>
+          @if (general.hasError('juevesSantoOtroAnio')) {
+            <p class="nota error" role="alert">
+              El Jueves Santo tiene que ser del año del reparto.
+            </p>
+          }
+        }
+
+        <mat-checkbox formControlName="modoTransicion">Modo transición</mat-checkbox>
+        <p class="nota">
+          Para el primer reparto con la aplicación: no hay histórico del año anterior, así que no se
+          reservan túnicas al abrirlo y la renovación se registra con el resguardo en papel.
+        </p>
+
+        <div class="botones">
+          <button mat-flat-button matStepperNext type="button">Siguiente</button>
+        </div>
+      </form>
+    </mat-step>
+
+    <!-- Paso 2 -->
+    <mat-step label="Jornadas" [stepControl]="jornadas">
+      <div class="campos">
+        @for (jornada of jornadas.controls; track $index; let i = $index) {
+          <fieldset class="jornada" [formGroup]="jornada">
+            <legend>Día {{ i + 1 }}</legend>
+            <div class="fila">
+              <mat-form-field appearance="outline" class="corto">
+                <mat-label>Fecha</mat-label>
+                <input
+                  matInput
+                  [matDatepicker]="selectorDia"
+                  formControlName="fecha"
+                  placeholder="dd/mm/aaaa"
+                  required
+                />
+                <mat-datepicker-toggle matIconSuffix [for]="selectorDia" />
+                <mat-datepicker #selectorDia />
+                @if (jornada.controls.fecha.hasError('matDatepickerParse')) {
+                  <mat-error>Fecha no válida (dd/mm/aaaa)</mat-error>
+                } @else if (jornada.controls.fecha.invalid) {
+                  <mat-error>Indica la fecha</mat-error>
+                }
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="hora">
+                <mat-label>Desde</mat-label>
+                <input matInput [matTimepicker]="selectorDesde" formControlName="horaInicio" />
+                <mat-timepicker-toggle matIconSuffix [for]="selectorDesde" />
+                <mat-timepicker #selectorDesde interval="15m" />
+                @if (jornada.controls.horaInicio.invalid) {
+                  <mat-error>Hora no válida</mat-error>
+                }
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="hora">
+                <mat-label>Hasta</mat-label>
+                <input matInput [matTimepicker]="selectorHasta" formControlName="horaFin" />
+                <mat-timepicker-toggle matIconSuffix [for]="selectorHasta" />
+                <mat-timepicker #selectorHasta interval="15m" />
+                @if (jornada.controls.horaFin.invalid) {
+                  <mat-error>Hora no válida</mat-error>
+                }
+              </mat-form-field>
+            </div>
+            @if (jornada.hasError('horario')) {
+              <p class="nota error" role="alert">
+                La hora de fin no puede ser anterior a la de inicio.
+              </p>
+            }
+            <div class="operaciones">
+              <mat-checkbox formControlName="permiteRenovacion">Renovación</mat-checkbox>
+              <mat-checkbox formControlName="permiteNuevaAlta">Nueva alta</mat-checkbox>
+              <mat-checkbox formControlName="permiteCambio">Cambio</mat-checkbox>
+            </div>
+          </fieldset>
+        }
+        @if (jornadas.hasError('desordenadas')) {
+          <p class="nota error" role="alert">Cada día tiene que ser posterior al anterior.</p>
+        }
+        <p class="nota">Las jornadas extraordinarias se añaden después, desde el reparto.</p>
+
+        <div class="botones">
+          <button mat-button matStepperPrevious type="button">Atrás</button>
+          <button mat-flat-button matStepperNext type="button">Siguiente</button>
+        </div>
+      </div>
+    </mat-step>
+
+    <!-- Paso 3 -->
+    <mat-step label="Censo de hermanos" [optional]="true">
+      <div class="campos censo">
+        <p class="nota">
+          Sube el Excel de Secretaría con los hermanos en edad. Si el censo ya está cargado, sigue
+          sin subirlo. La importación se guarda al confirmarla, aunque no termines de crear el
+          reparto.
+        </p>
+        <app-importar-hermanos [incrustado]="true" (terminado)="censo.set($event)" />
+        <div class="botones">
+          <button mat-button matStepperPrevious type="button">Atrás</button>
+          <button mat-flat-button matStepperNext type="button">
+            {{ censo() ? 'Siguiente' : 'Seguir sin cargarlo' }}
+          </button>
+        </div>
+      </div>
+    </mat-step>
+
+    <!-- Paso 4 -->
+    <mat-step label="Edades y tolerancia de medida" [stepControl]="edades">
+      <form [formGroup]="edades" class="campos" novalidate>
+        <p class="nota">Edad cumplida a fecha de Jueves Santo.</p>
+        <div class="fila">
+          <mat-form-field appearance="outline" class="corto">
+            <mat-label>Edad mínima</mat-label>
+            <input
+              matInput
+              type="number"
+              inputmode="numeric"
+              formControlName="edadMin"
+              required
+              [min]="limites.edadMinima"
+              [max]="limites.edadMaxima"
+            />
+            <span matTextSuffix>años</span>
+            @if (edades.controls.edadMin.invalid) {
+              <mat-error>Entre {{ limites.edadMinima }} y {{ limites.edadMaxima }}</mat-error>
+            }
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="corto">
+            <mat-label>Edad máxima</mat-label>
+            <input
+              matInput
+              type="number"
+              inputmode="numeric"
+              formControlName="edadMax"
+              required
+              [min]="limites.edadMinima"
+              [max]="limites.edadMaxima"
+            />
+            <span matTextSuffix>años</span>
+            @if (edades.controls.edadMax.invalid) {
+              <mat-error>Entre {{ limites.edadMinima }} y {{ limites.edadMaxima }}</mat-error>
+            }
+          </mat-form-field>
+        </div>
+        @if (edades.hasError('edades')) {
+          <p class="nota error" role="alert">La edad máxima no puede ser menor que la mínima.</p>
+        }
+
+        <mat-form-field appearance="outline" class="corto">
+          <mat-label>Tolerancia de medida</mat-label>
+          <input
+            matInput
+            type="number"
+            inputmode="numeric"
+            formControlName="toleranciaMedidaCm"
+            required
+            min="0"
+            [max]="limites.toleranciaMaxima"
+          />
+          <span matTextSuffix>cm</span>
+          <mat-hint
+            >Diferencia admitida entre la altura del hermano y la medida de la túnica</mat-hint
+          >
+          @if (edades.controls.toleranciaMedidaCm.invalid) {
+            <mat-error>Entre 0 y {{ limites.toleranciaMaxima }} cm</mat-error>
+          }
+        </mat-form-field>
+
+        <div class="botones">
+          <button mat-button matStepperPrevious type="button">Atrás</button>
+          <button mat-flat-button matStepperNext type="button">Siguiente</button>
+        </div>
+      </form>
+    </mat-step>
+
+    <!-- Paso 5 -->
+    <mat-step label="Limosna e importes de sanción" [stepControl]="importes">
+      <form [formGroup]="importes" class="campos" novalidate>
+        <mat-form-field appearance="outline" class="corto">
+          <mat-label>Limosna del alquiler</mat-label>
+          <input
+            matInput
+            type="number"
+            inputmode="decimal"
+            step="0.01"
+            min="0"
+            formControlName="limosna"
+            required
+          />
+          <span matTextSuffix>€</span>
+          @if (importes.controls.limosna.invalid) {
+            <mat-error>Importe de 0 o más, con 2 decimales como mucho</mat-error>
+          }
+        </mat-form-field>
+
+        <h3 class="subtitulo">Sanciones</h3>
+        <div class="importes">
+          @for (sancion of sanciones; track sancion.campo) {
+            <mat-form-field appearance="outline">
+              <mat-label>{{ sancion.letra }} · {{ sancion.texto }}</mat-label>
+              <input
+                matInput
+                type="number"
+                inputmode="decimal"
+                step="0.01"
+                min="0"
+                [formControlName]="sancion.campo"
+                required
+              />
+              <span matTextSuffix>€</span>
+              @if (importes.controls[sancion.campo].invalid) {
+                <mat-error>Importe de 0 o más, con 2 decimales como mucho</mat-error>
+              }
+            </mat-form-field>
+          }
+        </div>
+        <p class="nota">
+          La F se cobra si no la devuelve al terminar el plazo de gracia, y se suma a la C.
+        </p>
+
+        <div class="botones">
+          <button mat-button matStepperPrevious type="button">Atrás</button>
+          <button mat-flat-button matStepperNext type="button">Siguiente</button>
+        </div>
+      </form>
+    </mat-step>
+
+    <!-- Paso 6 -->
+    <mat-step label="Devolución" [stepControl]="devolucion">
+      <form [formGroup]="devolucion" class="campos" novalidate>
+        <div class="fila">
+          <mat-form-field appearance="outline" class="corto">
+            <mat-label>Devolución desde</mat-label>
+            <input
+              matInput
+              [matDatepicker]="selectorInicio"
+              formControlName="inicio"
+              placeholder="dd/mm/aaaa"
+              required
+            />
+            <mat-datepicker-toggle matIconSuffix [for]="selectorInicio" />
+            <mat-datepicker #selectorInicio />
+            @if (devolucion.controls.inicio.hasError('matDatepickerParse')) {
+              <mat-error>Fecha no válida (dd/mm/aaaa)</mat-error>
+            } @else if (devolucion.controls.inicio.invalid) {
+              <mat-error>Indica la fecha</mat-error>
+            }
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="corto">
+            <mat-label>Devolución hasta</mat-label>
+            <input
+              matInput
+              [matDatepicker]="selectorFin"
+              formControlName="fin"
+              placeholder="dd/mm/aaaa"
+              [min]="devolucion.controls.inicio.value"
+              required
+            />
+            <mat-datepicker-toggle matIconSuffix [for]="selectorFin" />
+            <mat-datepicker #selectorFin />
+            @if (devolucion.controls.fin.hasError('matDatepickerParse')) {
+              <mat-error>Fecha no válida (dd/mm/aaaa)</mat-error>
+            } @else if (devolucion.controls.fin.hasError('matDatepickerMin')) {
+              <mat-error>No puede ser anterior a la de inicio</mat-error>
+            } @else if (devolucion.controls.fin.invalid) {
+              <mat-error>Indica la fecha</mat-error>
+            }
+          </mat-form-field>
+        </div>
+        @if (devolucion.hasError('periodo')) {
+          <p class="nota error" role="alert">La fecha fin no puede ser anterior a la de inicio.</p>
+        }
+
+        <mat-form-field appearance="outline" class="corto">
+          <mat-label>Plazo de gracia</mat-label>
+          <input
+            matInput
+            type="number"
+            inputmode="numeric"
+            formControlName="plazoGraciaMeses"
+            required
+            min="0"
+            [max]="limites.plazoGraciaMaximo"
+          />
+          <span matTextSuffix>meses</span>
+          <mat-hint>Tras la fecha fin, para devolverla antes del cargo total</mat-hint>
+          @if (devolucion.controls.plazoGraciaMeses.invalid) {
+            <mat-error>Entre 0 y {{ limites.plazoGraciaMaximo }} meses</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Lugar de devolución</mat-label>
+          <input
+            matInput
+            formControlName="lugarDevolucion"
+            [attr.maxlength]="limites.longitudLugar"
+          />
+          <mat-hint>Opcional</mat-hint>
+        </mat-form-field>
+
+        <div class="botones">
+          <button mat-button matStepperPrevious type="button">Atrás</button>
+          <button mat-flat-button matStepperNext type="button">Siguiente</button>
+        </div>
+      </form>
+    </mat-step>
+
+    <!-- Paso 7 -->
+    <mat-step label="Resumen">
+      @if (resumen(); as r) {
+        <dl class="resumen">
+          <dt>Año</dt>
+          <dd>
+            {{ r.anio }}
+            @if (r.modoTransicion) {
+              · modo transición
+            }
+          </dd>
+          <dt>Jueves Santo</dt>
+          <dd>
+            {{ formatoFecha(r.fechaJuevesSanto ?? juevesSantoCalculado()) }}
+            {{ r.fechaJuevesSanto ? '(fijado a mano)' : '(calculado)' }}
+          </dd>
+          @for (jornada of r.jornadas; track $index; let i = $index) {
+            <dt>Día {{ i + 1 }}</dt>
+            <dd>
+              {{ formatoFecha(jornada.fecha) }}
+              @if (jornada.horaInicio || jornada.horaFin) {
+                · {{ jornada.horaInicio ?? '…' }}–{{ jornada.horaFin ?? '…' }}
+              }
+              · {{ operaciones(i) }}
+            </dd>
+          }
+          <dt>Censo</dt>
+          <dd>
+            @if (censo(); as c) {
+              Cargado: {{ c.crear }} {{ c.crear === 1 ? 'hermano nuevo' : 'hermanos nuevos' }} y
+              {{ c.actualizar }} {{ c.actualizar === 1 ? 'actualizado' : 'actualizados' }}
+            } @else {
+              No se ha cargado en este asistente
+            }
+          </dd>
+          <dt>Edades</dt>
+          <dd>De {{ r.edadMin }} a {{ r.edadMax }} años a Jueves Santo</dd>
+          <dt>Tolerancia de medida</dt>
+          <dd>{{ r.toleranciaMedidaCm }} cm</dd>
+          <dt>Limosna</dt>
+          <dd>{{ formatoEuros(r.limosna) }}</dd>
+          @for (sancion of sanciones; track sancion.campo) {
+            <dt>{{ sancion.letra }} · {{ sancion.texto }}</dt>
+            <dd>{{ importeDe(sancion.campo) }}</dd>
+          }
+          <dt>Devolución</dt>
+          <dd>
+            Del {{ formatoFecha(r.periodoDevolucion.inicio) }} al
+            {{ formatoFecha(r.periodoDevolucion.fin) }}
+            @if (r.lugarDevolucion) {
+              · {{ r.lugarDevolucion }}
+            }
+          </dd>
+          <dt>Plazo de gracia</dt>
+          <dd>{{ r.periodoDevolucion.plazoGraciaMeses }} meses</dd>
+        </dl>
+      }
+      <p class="nota">
+        Se crea en borrador. Antes de abrirlo hay que subir la plantilla del resguardo, desde el
+        detalle del reparto.
+      </p>
+      @if (error(); as mensaje) {
+        <p class="nota error" role="alert">{{ mensaje }}</p>
+      }
+      <div class="botones">
+        <button mat-button matStepperPrevious type="button">Atrás</button>
+        <button
+          mat-flat-button
+          type="button"
+          [disabled]="enviando() || !resumen()"
+          (click)="crear()"
+        >
+          Crear reparto
+        </button>
+      </div>
+    </mat-step>
+  </mat-stepper>
+</mat-card>

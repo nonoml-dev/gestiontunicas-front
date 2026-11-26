@@ -50,6 +50,7 @@ export class Shell {
     { icono: 'home', texto: 'Inicio', ruta: '/inicio' },
     { icono: 'groups', texto: 'Hermanos', ruta: '/hermanos', funcionalidad: 'hermanos' },
     { icono: 'checkroom', texto: 'Túnicas', ruta: '/tunicas', funcionalidad: 'tunicas' },
+    { icono: 'event', texto: 'Repartos', ruta: '/repartos', funcionalidad: 'repartos' },
   ];
 
   protected readonly opciones = computed(() =>

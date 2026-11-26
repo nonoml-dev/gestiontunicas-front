@@ -1,0 +1,269 @@
+<a mat-button routerLink="/repartos" class="volver">
+  <mat-icon>arrow_back</mat-icon>
+  Volver a repartos
+</a>
+
+@if (cargando()) {
+  <mat-progress-bar mode="indeterminate" class="progreso" />
+}
+
+@if (reparto(); as r) {
+  <header class="cabecera">
+    <div class="linea-titulo">
+      <h2 class="anio">Reparto {{ r.anio }}</h2>
+      <span [class]="'estado ' + r.estado.toLowerCase()">{{ estados[r.estado] }}</span>
+      @if (r.modoTransicion) {
+        <span class="estado borrador">Modo transición</span>
+      }
+    </div>
+
+    @if (hayAcciones()) {
+      <button
+        mat-icon-button
+        type="button"
+        [matMenuTriggerFor]="acciones"
+        aria-label="Acciones"
+        matTooltip="Acciones"
+      >
+        <mat-icon>more_vert</mat-icon>
+      </button>
+      <mat-menu #acciones="matMenu" xPosition="before">
+        @if (puedeGestionar && puedeAbrir()) {
+          <button mat-menu-item type="button" (click)="abrir()">
+            <mat-icon>lock_open</mat-icon>
+            <span>Abrir reparto</span>
+          </button>
+        }
+        @if (puedeAnadirJornada && admiteJornadas()) {
+          <button mat-menu-item type="button" (click)="anadirJornada()">
+            <mat-icon>event_available</mat-icon>
+            <span>Añadir jornada extraordinaria</span>
+          </button>
+        }
+        @if (puedeCambiarPeriodo && periodoEditable()) {
+          <button mat-menu-item type="button" (click)="cambiarPeriodo()">
+            <mat-icon>event_repeat</mat-icon>
+            <span>Cambiar periodo de devolución</span>
+          </button>
+        }
+        @if (puedeGestionar && puedeCerrar()) {
+          <button mat-menu-item type="button" (click)="cerrar()">
+            <mat-icon>lock</mat-icon>
+            <span>Cerrar reparto</span>
+          </button>
+        }
+      </mat-menu>
+    }
+  </header>
+
+  @if (r.estado === 'BORRADOR' && !r.plantillaResguardoId) {
+    <p class="aviso" role="status">
+      <mat-icon>info</mat-icon>
+      Para abrir el reparto falta la plantilla del resguardo.
+    </p>
+  }
+  @if (error(); as mensaje) {
+    <p class="error" role="alert">{{ mensaje }}</p>
+  }
+
+  <mat-card appearance="outlined">
+    <mat-card-content>
+      <dl class="datos">
+        <div>
+          <dt>Jueves Santo</dt>
+          <dd>
+            {{ formatoFecha(r.fechaJuevesSanto) }}
+            <span class="sin-dato">{{
+              r.juevesSantoManual ? '(fijado a mano)' : '(calculado)'
+            }}</span>
+          </dd>
+        </div>
+        <div>
+          <dt>Edades a Jueves Santo</dt>
+          <dd>De {{ r.edadMin }} a {{ r.edadMax }} años</dd>
+        </div>
+        <div>
+          <dt>Limosna</dt>
+          <dd>{{ formatoEuros(r.limosna) }}</dd>
+        </div>
+        <div>
+          <dt>Tolerancia de medida</dt>
+          <dd>{{ r.toleranciaMedidaCm }} cm</dd>
+        </div>
+        <div>
+          <dt>Devolución</dt>
+          <dd>
+            Del {{ formatoFecha(r.periodoDevolucion.inicio) }} al
+            {{ formatoFecha(r.periodoDevolucion.fin) }}
+            @if (r.lugarDevolucion) {
+              · {{ r.lugarDevolucion }}
+            }
+          </dd>
+        </div>
+        <div>
+          <dt>Plazo de gracia</dt>
+          <dd>
+            {{ r.periodoDevolucion.plazoGraciaMeses }} meses, hasta el
+            {{ formatoFecha(r.periodoDevolucion.finPlazoGracia) }}
+          </dd>
+        </div>
+        <div>
+          <dt>Plantilla del resguardo</dt>
+          <dd [class.sin-dato]="!r.plantillaResguardoNombre">
+            {{ r.plantillaResguardoNombre ?? 'Sin plantilla' }}
+          </dd>
+        </div>
+        @if (r.fechaApertura) {
+          <div>
+            <dt>Abierto el</dt>
+            <dd>{{ r.fechaApertura | date: 'dd/MM/yyyy HH:mm' }}</dd>
+          </div>
+        }
+        @if (r.fechaCierre) {
+          <div>
+            <dt>Cerrado el</dt>
+            <dd>{{ r.fechaCierre | date: 'dd/MM/yyyy HH:mm' }}</dd>
+          </div>
+        }
+      </dl>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-tab-group animationDuration="0ms" mat-stretch-tabs="false" class="pestanas">
+    <mat-tab label="Configuración">
+      <mat-card appearance="outlined" class="contenido-pestana">
+        <h3 class="subtitulo">Jornadas</h3>
+        <ul class="lista">
+          @for (jornada of jornadas(); track jornada.id) {
+            <li class="elemento">
+              <mat-icon class="icono">event</mat-icon>
+              <div class="detalle">
+                <span class="nombre">
+                  {{ jornada.extraordinaria ? 'Extraordinaria' : 'Día ' + jornada.numero }} ·
+                  {{ formatoFecha(jornada.fecha) }}
+                  @if (horario(jornada); as h) {
+                    · {{ h }}
+                  }
+                </span>
+                <span class="descripcion">{{ operaciones(jornada) }}</span>
+              </div>
+              @if (jornada.extraordinaria) {
+                <span class="estado borrador">
+                  {{
+                    jornada.limosna !== null ? formatoEuros(jornada.limosna) : 'Limosna del reparto'
+                  }}
+                </span>
+              }
+            </li>
+          }
+        </ul>
+
+        <h3 class="subtitulo">Importes de sanción</h3>
+        <dl class="importes">
+          @for (sancion of sanciones; track sancion.campo) {
+            <div>
+              <dt>{{ sancion.letra }} · {{ sancion.texto }}</dt>
+              <dd>{{ formatoEuros(r.tarifas[sancion.campo]) }}</dd>
+            </div>
+          }
+        </dl>
+      </mat-card>
+    </mat-tab>
+
+    @if (gestionaPlantilla) {
+      <mat-tab label="Plantilla del resguardo">
+        <mat-card appearance="outlined" class="contenido-pestana">
+          @if (plantillaVigente(); as p) {
+            <div class="plantilla">
+              <mat-icon class="icono">description</mat-icon>
+              <div class="detalle">
+                <span class="nombre">{{ p.nombreFichero }}</span>
+                <span class="descripcion">
+                  Subida por {{ p.subidoPor }} el {{ p.subidoEn | date: 'dd/MM/yyyy' }} ·
+                  {{
+                    p.variablesDetectadas.length === 1
+                      ? '1 variable'
+                      : p.variablesDetectadas.length + ' variables'
+                  }}
+                  @if (p.variablesDesconocidas.length) {
+                    · {{ p.variablesDesconocidas.length }} sin reconocer
+                  }
+                </span>
+              </div>
+              <button mat-button type="button" (click)="descargar(p)">
+                <mat-icon>download</mat-icon>
+                Descargar
+              </button>
+            </div>
+          } @else {
+            <p class="vacio">Este reparto todavía no tiene plantilla del resguardo.</p>
+          }
+
+          @if (r.estado !== 'CERRADO') {
+            <div class="botones">
+              <button mat-flat-button type="button" (click)="subirPlantilla()">
+                <mat-icon>upload_file</mat-icon>
+                Subir nueva plantilla
+              </button>
+            </div>
+
+            @if (otrasPlantillas().length) {
+              <h3 class="subtitulo">Otras plantillas subidas</h3>
+              <ul class="lista">
+                @for (p of otrasPlantillas(); track p.id) {
+                  <li class="elemento">
+                    <mat-icon class="icono">description</mat-icon>
+                    <div class="detalle">
+                      <span class="nombre">{{ p.nombreFichero }}</span>
+                      <span class="descripcion"
+                        >Subida por {{ p.subidoPor }} el {{ p.subidoEn | date: 'dd/MM/yyyy' }}</span
+                      >
+                    </div>
+                    <button mat-button type="button" (click)="usarPlantilla(p)">Usar esta</button>
+                  </li>
+                }
+              </ul>
+            }
+          }
+        </mat-card>
+      </mat-tab>
+    }
+
+    <mat-tab
+      [label]="
+        cambios().length
+          ? 'Cambios del periodo de devolución (' + cambios().length + ')'
+          : 'Cambios del periodo de devolución'
+      "
+    >
+      <mat-card appearance="outlined" class="contenido-pestana">
+        <ul class="lista">
+          @for (cambio of cambios(); track cambio.id) {
+            <li class="elemento">
+              <mat-icon class="icono">history</mat-icon>
+              <div class="detalle">
+                <span class="nombre">
+                  Del {{ formatoFecha(cambio.anterior.inicio) }} al
+                  {{ formatoFecha(cambio.anterior.fin) }} ({{
+                    cambio.anterior.plazoGraciaMeses
+                  }}
+                  meses de gracia) → del {{ formatoFecha(cambio.nuevo.inicio) }} al
+                  {{ formatoFecha(cambio.nuevo.fin) }} ({{ cambio.nuevo.plazoGraciaMeses }} meses de
+                  gracia)
+                </span>
+                <span class="descripcion">{{ cambio.motivo }}</span>
+                <span class="fechas">
+                  {{ cambio.usuario }} · {{ cambio.fecha | date: 'dd/MM/yyyy HH:mm' }}
+                </span>
+              </div>
+            </li>
+          } @empty {
+            <li class="vacio">El periodo de devolución no se ha cambiado.</li>
+          }
+        </ul>
+      </mat-card>
+    </mat-tab>
+  </mat-tab-group>
+} @else if (error(); as mensaje) {
+  <p class="error" role="alert">{{ mensaje }}</p>
+}
