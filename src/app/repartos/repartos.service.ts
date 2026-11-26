@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import {
   CambioPeriodoDevolucion,
   CambioPeriodoDevolucionRequest,
+  JornadaRequest,
   ParametroConfiguracion,
   PlantillaResguardo,
   Reparto,
@@ -59,6 +60,11 @@ export class RepartosService {
   /** Reservas activas. */
   reservas(id: number): Observable<Reserva[]> {
     return this.http.get<Reserva[]>(`${URL}/${id}/reservas`);
+  }
+
+  /** Jornada extraordinaria, con limosna propia opcional (nula = la del reparto). */
+  anadirJornadaExtraordinaria(id: number, request: JornadaRequest): Observable<Reparto> {
+    return this.http.post<Reparto>(`${URL}/${id}/jornadas-extraordinarias`, request);
   }
 
   asignarPlantilla(id: number, plantillaId: number): Observable<Reparto> {
