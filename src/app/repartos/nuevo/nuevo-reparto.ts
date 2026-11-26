@@ -308,7 +308,7 @@ export class NuevoReparto implements OnInit {
       .subscribe({
         next: (reparto: Reparto) => {
           this.avisos.exito(`Reparto ${reparto.anio} creado en borrador`);
-          this.router.navigate(['/repartos']);
+          this.router.navigate(['/repartos', reparto.id]);
         },
         error: (err: unknown) =>
           this.error.set(mensajeError(err, 'No se ha podido crear el reparto.')),

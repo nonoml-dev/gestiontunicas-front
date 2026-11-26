@@ -42,6 +42,16 @@
   color: #060830;
 }
 
+.anio a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.anio a:hover,
+.anio a:focus-visible {
+  text-decoration: underline;
+}
+
 .estado {
   padding: 2px 12px;
   border-radius: 16px;
