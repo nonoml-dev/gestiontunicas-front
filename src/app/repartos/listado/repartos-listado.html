@@ -1,0 +1,53 @@
+@if (puedeCrear) {
+  <div class="acciones">
+    <a mat-flat-button routerLink="/repartos/nuevo">
+      <mat-icon>add</mat-icon>
+      Nuevo reparto
+    </a>
+  </div>
+}
+
+@if (cargando()) {
+  <mat-progress-bar mode="indeterminate" class="progreso" />
+} @else if (error(); as mensaje) {
+  <p class="nota error" role="alert">{{ mensaje }}</p>
+} @else if (!repartos().length) {
+  <mat-card appearance="outlined" class="vacio">
+    <mat-icon>event</mat-icon>
+    <p>Todavía no hay ningún reparto.</p>
+  </mat-card>
+} @else {
+  <div class="tarjetas">
+    @for (reparto of repartos(); track reparto.id) {
+      <mat-card appearance="outlined" class="reparto">
+        <div class="cabecera">
+          <h3 class="anio">Reparto {{ reparto.anio }}</h3>
+          <span [class]="'estado ' + reparto.estado.toLowerCase()">{{
+            estados[reparto.estado]
+          }}</span>
+        </div>
+        <dl class="datos">
+          <dt>Jueves Santo</dt>
+          <dd>{{ formatoFecha(reparto.fechaJuevesSanto) }}</dd>
+          <dt>Jornadas</dt>
+          <dd>
+            {{ dias(reparto) }}
+            @if (extraordinarias(reparto); as n) {
+              · {{ n === 1 ? '1 extraordinaria' : n + ' extraordinarias' }}
+            }
+          </dd>
+          <dt>Limosna</dt>
+          <dd>{{ formatoEuros(reparto.limosna) }}</dd>
+          <dt>Devolución</dt>
+          <dd>
+            Del {{ formatoFecha(reparto.periodoDevolucion.inicio) }} al
+            {{ formatoFecha(reparto.periodoDevolucion.fin) }}
+          </dd>
+        </dl>
+        @if (reparto.modoTransicion) {
+          <p class="nota">Modo transición</p>
+        }
+      </mat-card>
+    }
+  </div>
+}
