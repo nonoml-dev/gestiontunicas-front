@@ -21,15 +21,25 @@ import {
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatStepperModule } from '@angular/material/stepper';
+import { MatStepperIntl, MatStepperModule } from '@angular/material/stepper';
+import { MatTimepickerModule } from '@angular/material/timepicker';
 import { Router, RouterLink } from '@angular/router';
 import { finalize, forkJoin, map, startWith } from 'rxjs';
 
 import { AvisosService } from '../../comun/avisos/avisos.service';
+import {
+  aFechaIso,
+  aHora,
+  deFechaIso,
+  esAnterior,
+  minutosDelDia,
+} from '../../comun/fechas-material';
+import { CALENDARIO_ESPANOL } from '../../comun/calendario-espanol';
 import { mensajeError } from '../../comun/mensaje-error';
 import { hoy } from '../../tunicas/fechas';
 import {
@@ -42,6 +52,10 @@ import {
   formatoEuros,
   formatoFecha,
 } from '../reparto.models';
+import {
+  ImportarHermanos,
+  ResumenImportacionHermanos,
+} from '../../hermanos/importacion/importar-hermanos';
 import { RepartosService } from '../repartos.service';
 
 /** Límites del servidor (RepartoRequest, JornadaRequest y PeriodoDevolucionRequest). */
@@ -71,11 +85,16 @@ const dosDecimales: ValidatorFn = (control) => {
 
 /** Si se fija a mano, el Jueves Santo tiene que caer en el año del reparto. */
 const juevesSantoDelAnio: ValidatorFn = (grupo: AbstractControl): ValidationErrors | null => {
-  const { anio, juevesSantoManual, fechaJuevesSanto } = grupo.getRawValue();
+  const { anio, juevesSantoManual, fechaJuevesSanto } = grupo.getRawValue() as {
+    anio: number | null;
+    juevesSantoManual: boolean;
+    fechaJuevesSanto: Date | null;
+  };
   return juevesSantoManual &&
     anio &&
     fechaJuevesSanto &&
-    !String(fechaJuevesSanto).startsWith(`${anio}-`)
+    !isNaN(fechaJuevesSanto.getTime()) &&
+    fechaJuevesSanto.getFullYear() !== anio
     ? { juevesSantoOtroAnio: true }
     : null;
 };
@@ -88,7 +107,7 @@ const importe = () =>
     dosDecimales,
   ]);
 
-/** El valor de {@code mayor} no puede quedar por debajo del de {@code menor}. */
+/** El número de {@code mayor} no puede quedar por debajo del de {@code menor}. */
 function noMenorQue(menor: string, mayor: string, error: string): ValidatorFn {
   return (grupo: AbstractControl): ValidationErrors | null => {
     const a = grupo.get(menor)?.value;
@@ -97,13 +116,41 @@ function noMenorQue(menor: string, mayor: string, error: string): ValidatorFn {
   };
 }
 
+/** La fecha de {@code fin} no puede ser anterior a la de {@code inicio}. */
+function fechaNoAnterior(inicio: string, fin: string, error: string): ValidatorFn {
+  return (grupo: AbstractControl): ValidationErrors | null =>
+    esAnterior(grupo.get(fin)?.value, grupo.get(inicio)?.value) ? { [error]: true } : null;
+}
+
+/** La hora de fin no puede ser anterior a la de inicio (solo cuenta la hora, no el día). */
+const horarioCoherente: ValidatorFn = (grupo: AbstractControl): ValidationErrors | null => {
+  const inicio = minutosDelDia(grupo.get('horaInicio')?.value);
+  const fin = minutosDelDia(grupo.get('horaFin')?.value);
+  return inicio !== null && fin !== null && fin < inicio ? { horario: true } : null;
+};
+
 /** Cada jornada, en un día posterior a la anterior. */
 const fechasEnOrden: ValidatorFn = (jornadas: AbstractControl): ValidationErrors | null => {
-  const fechas = (jornadas as FormArray).controls.map((j) => j.get('fecha')?.value as string);
-  return fechas.every((fecha, i) => i === 0 || !fecha || !fechas[i - 1] || fecha > fechas[i - 1])
+  const fechas = (jornadas as FormArray).controls.map((j) => j.get('fecha')?.value as Date | null);
+  return fechas.every(
+    (fecha, i) => i === 0 || (!esAnterior(fecha, fechas[i - 1]) && !mismoDia(fecha, fechas[i - 1])),
+  )
     ? null
     : { desordenadas: true };
 };
+
+function mismoDia(a: Date | null, b: Date | null): boolean {
+  return !!a && !!b && aFechaIso(a) !== null && aFechaIso(a) === aFechaIso(b);
+}
+
+/** Textos del stepper en español ("Opcional" bajo el paso del censo). */
+function pasosEnEspanol(): MatStepperIntl {
+  const textos = new MatStepperIntl();
+  textos.optionalLabel = 'Opcional';
+  textos.completedLabel = 'Completado';
+  textos.editableLabel = 'Editable';
+  return textos;
+}
 
 /**
  * Asistente "Nuevo reparto" (DESIGN.md §7.8): crea el reparto en borrador. El censo (REP-07) y la
@@ -112,20 +159,24 @@ const fechasEnOrden: ValidatorFn = (jornadas: AbstractControl): ValidationErrors
 @Component({
   selector: 'app-nuevo-reparto',
   imports: [
+    ImportarHermanos,
     ReactiveFormsModule,
     RouterLink,
     MatButtonModule,
     MatCardModule,
     MatCheckboxModule,
+    MatDatepickerModule,
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
     MatProgressBarModule,
     MatStepperModule,
+    MatTimepickerModule,
   ],
   templateUrl: './nuevo-reparto.html',
   styleUrl: './nuevo-reparto.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [CALENDARIO_ESPANOL, { provide: MatStepperIntl, useFactory: pasosEnEspanol }],
 })
 export class NuevoReparto implements OnInit {
   private readonly fb = inject(NonNullableFormBuilder);
@@ -163,7 +214,7 @@ export class NuevoReparto implements OnInit {
           this.aniosExistentes().includes(control.value) ? { repetido: true } : null,
       ]),
       juevesSantoManual: false,
-      fechaJuevesSanto: '',
+      fechaJuevesSanto: this.fb.control<Date | null>(null),
       modoTransicion: false,
     },
     { validators: juevesSantoDelAnio },
@@ -173,12 +224,12 @@ export class NuevoReparto implements OnInit {
     OPERACIONES_POR_DIA.map((operaciones) =>
       this.fb.group(
         {
-          fecha: ['', Validators.required],
-          horaInicio: '',
-          horaFin: '',
+          fecha: this.fb.control<Date | null>(null, Validators.required),
+          horaInicio: this.fb.control<Date | null>(null),
+          horaFin: this.fb.control<Date | null>(null),
           ...operaciones,
         },
-        { validators: noMenorQue('horaInicio', 'horaFin', 'horario') },
+        { validators: horarioCoherente },
       ),
     ),
     { validators: fechasEnOrden },
@@ -220,8 +271,8 @@ export class NuevoReparto implements OnInit {
 
   protected readonly devolucion = this.fb.group(
     {
-      inicio: ['', Validators.required],
-      fin: ['', Validators.required],
+      inicio: this.fb.control<Date | null>(null, Validators.required),
+      fin: this.fb.control<Date | null>(null, Validators.required),
       plazoGraciaMeses: this.fb.control<number | null>(PLAZO_GRACIA_POR_DEFECTO, [
         Validators.required,
         Validators.min(0),
@@ -230,7 +281,7 @@ export class NuevoReparto implements OnInit {
       ]),
       lugarDevolucion: ['', Validators.maxLength(LONGITUD_LUGAR)],
     },
-    { validators: noMenorQue('inicio', 'fin', 'periodo') },
+    { validators: fechaNoAnterior('inicio', 'fin', 'periodo') },
   );
 
   private readonly valorGeneral = toSignal(
@@ -249,6 +300,10 @@ export class NuevoReparto implements OnInit {
 
   /** Lo que se enviará, para el resumen. */
   protected readonly resumen = signal<RepartoRequest | null>(null);
+  /** Índice del paso del resumen, el último. */
+  protected readonly pasoResumen = 6;
+  /** Cifras del censo si se ha cargado en el paso 3. */
+  protected readonly censo = signal<ResumenImportacionHermanos | null>(null);
 
   constructor() {
     // Al fijar la fecha a mano se propone la calculada; al quitarlo, deja de ser obligatoria.
@@ -258,7 +313,7 @@ export class NuevoReparto implements OnInit {
         const fecha = this.general.controls.fechaJuevesSanto;
         fecha.setValidators(manual ? Validators.required : null);
         if (manual && !fecha.value) {
-          fecha.setValue(this.juevesSantoCalculado() ?? '');
+          fecha.setValue(deFechaIso(this.juevesSantoCalculado()));
         }
         fecha.updateValueAndValidity();
       });
@@ -357,12 +412,12 @@ export class NuevoReparto implements OnInit {
     const lugar = devolucion.lugarDevolucion.trim();
     return {
       anio: general.anio!,
-      fechaJuevesSanto: general.juevesSantoManual ? general.fechaJuevesSanto : null,
+      fechaJuevesSanto: general.juevesSantoManual ? aFechaIso(general.fechaJuevesSanto) : null,
       edadMin: edades.edadMin!,
       edadMax: edades.edadMax!,
       periodoDevolucion: {
-        inicio: devolucion.inicio,
-        fin: devolucion.fin,
+        inicio: aFechaIso(devolucion.inicio)!,
+        fin: aFechaIso(devolucion.fin)!,
         plazoGraciaMeses: devolucion.plazoGraciaMeses!,
       },
       lugarDevolucion: lugar || null,
@@ -378,9 +433,9 @@ export class NuevoReparto implements OnInit {
       toleranciaMedidaCm: edades.toleranciaMedidaCm!,
       modoTransicion: general.modoTransicion,
       jornadas: this.jornadas.getRawValue().map((j) => ({
-        fecha: j.fecha,
-        horaInicio: j.horaInicio || null,
-        horaFin: j.horaFin || null,
+        fecha: aFechaIso(j.fecha)!,
+        horaInicio: aHora(j.horaInicio),
+        horaFin: aHora(j.horaFin),
         limosna: null,
         permiteRenovacion: j.permiteRenovacion,
         permiteNuevaAlta: j.permiteNuevaAlta,

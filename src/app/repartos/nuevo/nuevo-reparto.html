@@ -14,7 +14,7 @@
     orientation="vertical"
     linear
     [disableRipple]="true"
-    (selectionChange)="$event.selectedIndex === 5 && prepararResumen()"
+    (selectionChange)="$event.selectedIndex === pasoResumen && prepararResumen()"
   >
     <!-- Paso 1 -->
     <mat-step label="Año y Jueves Santo" [stepControl]="general">
@@ -54,8 +54,18 @@
         @if (general.controls.juevesSantoManual.value) {
           <mat-form-field appearance="outline" class="corto">
             <mat-label>Jueves Santo</mat-label>
-            <input matInput type="date" formControlName="fechaJuevesSanto" required />
-            @if (general.controls.fechaJuevesSanto.invalid) {
+            <input
+              matInput
+              [matDatepicker]="selectorJuevesSanto"
+              formControlName="fechaJuevesSanto"
+              placeholder="dd/mm/aaaa"
+              required
+            />
+            <mat-datepicker-toggle matIconSuffix [for]="selectorJuevesSanto" />
+            <mat-datepicker #selectorJuevesSanto />
+            @if (general.controls.fechaJuevesSanto.hasError('matDatepickerParse')) {
+              <mat-error>Fecha no válida (dd/mm/aaaa)</mat-error>
+            } @else if (general.controls.fechaJuevesSanto.invalid) {
               <mat-error>Indica la fecha</mat-error>
             }
           </mat-form-field>
@@ -87,18 +97,38 @@
             <div class="fila">
               <mat-form-field appearance="outline" class="corto">
                 <mat-label>Fecha</mat-label>
-                <input matInput type="date" formControlName="fecha" required />
-                @if (jornada.controls.fecha.invalid) {
+                <input
+                  matInput
+                  [matDatepicker]="selectorDia"
+                  formControlName="fecha"
+                  placeholder="dd/mm/aaaa"
+                  required
+                />
+                <mat-datepicker-toggle matIconSuffix [for]="selectorDia" />
+                <mat-datepicker #selectorDia />
+                @if (jornada.controls.fecha.hasError('matDatepickerParse')) {
+                  <mat-error>Fecha no válida (dd/mm/aaaa)</mat-error>
+                } @else if (jornada.controls.fecha.invalid) {
                   <mat-error>Indica la fecha</mat-error>
                 }
               </mat-form-field>
               <mat-form-field appearance="outline" class="hora">
                 <mat-label>Desde</mat-label>
-                <input matInput type="time" formControlName="horaInicio" />
+                <input matInput [matTimepicker]="selectorDesde" formControlName="horaInicio" />
+                <mat-timepicker-toggle matIconSuffix [for]="selectorDesde" />
+                <mat-timepicker #selectorDesde interval="15m" />
+                @if (jornada.controls.horaInicio.invalid) {
+                  <mat-error>Hora no válida</mat-error>
+                }
               </mat-form-field>
               <mat-form-field appearance="outline" class="hora">
                 <mat-label>Hasta</mat-label>
-                <input matInput type="time" formControlName="horaFin" />
+                <input matInput [matTimepicker]="selectorHasta" formControlName="horaFin" />
+                <mat-timepicker-toggle matIconSuffix [for]="selectorHasta" />
+                <mat-timepicker #selectorHasta interval="15m" />
+                @if (jornada.controls.horaFin.invalid) {
+                  <mat-error>Hora no válida</mat-error>
+                }
               </mat-form-field>
             </div>
             @if (jornada.hasError('horario')) {
@@ -126,6 +156,24 @@
     </mat-step>
 
     <!-- Paso 3 -->
+    <mat-step label="Censo de hermanos" [optional]="true">
+      <div class="campos censo">
+        <p class="nota">
+          Sube el Excel de Secretaría con los hermanos en edad. Si el censo ya está cargado, sigue
+          sin subirlo. La importación se guarda al confirmarla, aunque no termines de crear el
+          reparto.
+        </p>
+        <app-importar-hermanos [incrustado]="true" (terminado)="censo.set($event)" />
+        <div class="botones">
+          <button mat-button matStepperPrevious type="button">Atrás</button>
+          <button mat-flat-button matStepperNext type="button">
+            {{ censo() ? 'Siguiente' : 'Seguir sin cargarlo' }}
+          </button>
+        </div>
+      </div>
+    </mat-step>
+
+    <!-- Paso 4 -->
     <mat-step label="Edades y tolerancia de medida" [stepControl]="edades">
       <form [formGroup]="edades" class="campos" novalidate>
         <p class="nota">Edad cumplida a fecha de Jueves Santo.</p>
@@ -194,7 +242,7 @@
       </form>
     </mat-step>
 
-    <!-- Paso 4 -->
+    <!-- Paso 5 -->
     <mat-step label="Limosna e importes de sanción" [stepControl]="importes">
       <form [formGroup]="importes" class="campos" novalidate>
         <mat-form-field appearance="outline" class="corto">
@@ -246,21 +294,44 @@
       </form>
     </mat-step>
 
-    <!-- Paso 5 -->
+    <!-- Paso 6 -->
     <mat-step label="Devolución" [stepControl]="devolucion">
       <form [formGroup]="devolucion" class="campos" novalidate>
         <div class="fila">
           <mat-form-field appearance="outline" class="corto">
             <mat-label>Devolución desde</mat-label>
-            <input matInput type="date" formControlName="inicio" required />
-            @if (devolucion.controls.inicio.invalid) {
+            <input
+              matInput
+              [matDatepicker]="selectorInicio"
+              formControlName="inicio"
+              placeholder="dd/mm/aaaa"
+              required
+            />
+            <mat-datepicker-toggle matIconSuffix [for]="selectorInicio" />
+            <mat-datepicker #selectorInicio />
+            @if (devolucion.controls.inicio.hasError('matDatepickerParse')) {
+              <mat-error>Fecha no válida (dd/mm/aaaa)</mat-error>
+            } @else if (devolucion.controls.inicio.invalid) {
               <mat-error>Indica la fecha</mat-error>
             }
           </mat-form-field>
           <mat-form-field appearance="outline" class="corto">
             <mat-label>Devolución hasta</mat-label>
-            <input matInput type="date" formControlName="fin" required />
-            @if (devolucion.controls.fin.invalid) {
+            <input
+              matInput
+              [matDatepicker]="selectorFin"
+              formControlName="fin"
+              placeholder="dd/mm/aaaa"
+              [min]="devolucion.controls.inicio.value"
+              required
+            />
+            <mat-datepicker-toggle matIconSuffix [for]="selectorFin" />
+            <mat-datepicker #selectorFin />
+            @if (devolucion.controls.fin.hasError('matDatepickerParse')) {
+              <mat-error>Fecha no válida (dd/mm/aaaa)</mat-error>
+            } @else if (devolucion.controls.fin.hasError('matDatepickerMin')) {
+              <mat-error>No puede ser anterior a la de inicio</mat-error>
+            } @else if (devolucion.controls.fin.invalid) {
               <mat-error>Indica la fecha</mat-error>
             }
           </mat-form-field>
@@ -304,7 +375,7 @@
       </form>
     </mat-step>
 
-    <!-- Paso 6 -->
+    <!-- Paso 7 -->
     <mat-step label="Resumen">
       @if (resumen(); as r) {
         <dl class="resumen">
@@ -330,6 +401,15 @@
               · {{ operaciones(i) }}
             </dd>
           }
+          <dt>Censo</dt>
+          <dd>
+            @if (censo(); as c) {
+              Cargado: {{ c.crear }} {{ c.crear === 1 ? 'hermano nuevo' : 'hermanos nuevos' }} y
+              {{ c.actualizar }} {{ c.actualizar === 1 ? 'actualizado' : 'actualizados' }}
+            } @else {
+              No se ha cargado en este asistente
+            }
+          </dd>
           <dt>Edades</dt>
           <dd>De {{ r.edadMin }} a {{ r.edadMax }} años a Jueves Santo</dd>
           <dt>Tolerancia de medida</dt>
@@ -353,8 +433,8 @@
         </dl>
       }
       <p class="nota">
-        Se crea en borrador. Antes de abrirlo hay que cargar el censo y subir la plantilla del
-        resguardo.
+        Se crea en borrador. Antes de abrirlo hay que subir la plantilla del resguardo, desde el
+        detalle del reparto.
       </p>
       @if (error(); as mensaje) {
         <p class="nota error" role="alert">{{ mensaje }}</p>

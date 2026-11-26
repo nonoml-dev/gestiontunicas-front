@@ -5,6 +5,7 @@ import { MATERIAL_ANIMATIONS } from '@angular/material/core';
 import { provideRouter } from '@angular/router';
 
 import { AuthService } from '../auth/auth.service';
+import { provideFechasEspanol } from '../comun/fechas-material';
 import { RepartoDetalle } from './detalle/reparto-detalle';
 import { CambioPeriodoDevolucion, PlantillaResguardo, Reparto } from './reparto.models';
 
@@ -129,6 +130,7 @@ describe('RepartoDetalle', () => {
         provideHttpClientTesting(),
         { provide: MATERIAL_ANIMATIONS, useValue: { animationsDisabled: true } },
         { provide: AuthService, useValue: { puede: () => gestiona } },
+        provideFechasEspanol(),
       ],
     });
     http = TestBed.inject(HttpTestingController);
@@ -275,7 +277,8 @@ describe('RepartoDetalle', () => {
     http.expectNone(`${URL}/periodo-devolucion`);
     expect(textoDialogo()).toContain('Escribe el motivo del cambio');
 
-    campos[1].value = '2027-05-15';
+    // Se escribe como lo haría el prioste: dd/mm/aaaa
+    campos[1].value = '15/05/2027';
     campos[1].dispatchEvent(new Event('input'));
     campos[3].value = '  Lluvias en Semana Santa ';
     campos[3].dispatchEvent(new Event('input'));
